@@ -15,8 +15,11 @@ const db_info = {
 
 const pool = mysql.createPool(db_info);
 
-// 데이터베이스 쿼리 메서드
+//데이터베이스 쿼리 메서드
 module.exports = {
+    init: function () {
+        return mysql.createPool(db_info); // 연결 풀 반환
+    },
     // 쿼리 실행 함수
     query: function (sql, params) {
         return new Promise((resolve, reject) => {
