@@ -1,21 +1,32 @@
 const mysql = require("mysql2");
+require('dotenv').config(); 
 
 const db_info = {
-    host: "localhost", // 데이터베이스 주소
-    port: "3306", // 데이터베이스 포트
-    user: "root", // 로그인 계정
-    password: "root", // 비밀번호 //본인 root 계정 비밀번호 사용
-    database: "pocket_sol", // 엑세스할 데이터베이스
+    host: process.env.DB_HOST,       // .env 파일에서 값 가져오기
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT || 3306, // 포트 기본값 3306
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
   };
 
+
+const pool = mysql.createPool(db_info);
+
+// 데이터베이스 쿼리 메서드
 module.exports = {
-    init: function () {
-      return mysql.createConnection(db_info);
-    },
-    connect: function (conn) {
-      conn.connect(function (err) {
-        if (err) console.error("mysql connection error : " + err);
-        else console.log("mysql is connected successfully!");
-      });
+    // 쿼리 실행 함수
+    query: function (sql, params) {
+        return new Promise((resolve, reject) => {
+            pool.query(sql, params, function (err, results) {
+                if (err) {
+                    reject(err);  // 쿼리 실패 시 에러 처리
+                } else {
+                    resolve(results);  // 쿼리 성공 시 결과 반환
+                }
+            });
+        });
     },
 };
