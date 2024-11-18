@@ -1,5 +1,6 @@
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 const mysql = require("mysql2");
-require('dotenv').config('../.env'); 
 
 const db_info = {
     host: process.env.DB_HOST,       // .env 파일에서 값 가져오기
@@ -18,7 +19,7 @@ const pool = mysql.createPool(db_info);
 //데이터베이스 쿼리 메서드
 module.exports = {
     init: function () {
-        return mysql.createPool(db_info); // 연결 풀 반환
+        return pool;// 연결 풀 반환
     },
     // 쿼리 실행 함수
     query: function (sql, params) {
