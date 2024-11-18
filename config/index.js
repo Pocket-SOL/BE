@@ -1,4 +1,4 @@
-require('dotenv').config(); // .env 파일 로드
+// 서버 실행 코드
 const express = require('express');
 const db = require('./mysql'); // mysql.js 파일 가져오기
 
