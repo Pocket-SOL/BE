@@ -1,5 +1,5 @@
+// table 초기화 코드
 const express = require("express");
-// const mysql = require("mysql2");
 const db = require("./mysql"); // 주어진 db_info 코드
 const tables = require("./table");
 
