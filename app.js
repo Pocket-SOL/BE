@@ -10,7 +10,8 @@ var usersRouter = require('./routes/users');
 //swagger 추가
 var swaggerUi = require("swagger-ui-express");
 var swaggerSpecs = require('./config/swagger'); 
-
+// sequelize 라이브러리로 ORM 사용
+var sequelize = require('./models/index.js').sequelize;
 var app = express();
 
 // view engine setup
