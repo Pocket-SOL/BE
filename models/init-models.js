@@ -6,6 +6,8 @@ var _history = require("./history");
 var _mission = require("./mission");
 var _purchase = require("./purchase");
 var _purchaseuser = require("./purchaseuser");
+var _scheduledtransfer = require("./scheduledtransfer");
+var _sequelizemeta = require("./sequelizemeta");
 var _subaccount = require("./subaccount");
 var _subaccounthistory = require("./subaccounthistory");
 var _user = require("./user");
@@ -18,6 +20,8 @@ function initModels(sequelize) {
   var mission = _mission(sequelize, DataTypes);
   var purchase = _purchase(sequelize, DataTypes);
   var purchaseuser = _purchaseuser(sequelize, DataTypes);
+  var scheduledtransfer = _scheduledtransfer(sequelize, DataTypes);
+  var sequelizemeta = _sequelizemeta(sequelize, DataTypes);
   var subaccount = _subaccount(sequelize, DataTypes);
   var subaccounthistory = _subaccounthistory(sequelize, DataTypes);
   var user = _user(sequelize, DataTypes);
@@ -30,6 +34,8 @@ function initModels(sequelize) {
   purchase.hasMany(comment, { as: "comments", foreignKey: "purchase_id"});
   purchaseuser.belongsTo(purchase, { as: "purchase", foreignKey: "purchase_id"});
   purchase.hasMany(purchaseuser, { as: "purchaseusers", foreignKey: "purchase_id"});
+  scheduledtransfer.belongsTo(subaccount, { as: "sub_account", foreignKey: "sub_account_id"});
+  subaccount.hasMany(scheduledtransfer, { as: "scheduledtransfers", foreignKey: "sub_account_id"});
   subaccounthistory.belongsTo(subaccount, { as: "sub_account", foreignKey: "sub_account_id"});
   subaccount.hasMany(subaccounthistory, { as: "subaccounthistories", foreignKey: "sub_account_id"});
   account.belongsTo(user, { as: "user", foreignKey: "user_id"});
@@ -49,6 +55,8 @@ function initModels(sequelize) {
     mission,
     purchase,
     purchaseuser,
+    scheduledtransfer,
+    sequelizemeta,
     subaccount,
     subaccounthistory,
     user,

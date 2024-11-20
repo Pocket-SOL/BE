@@ -41,6 +41,7 @@ const tables = [
         date DATE NOT NULL,
         time TIME NOT NULL,
         transaction_type VARCHAR(50) NOT NULL,
+        bank VARCHAR(50),
         account_holder VARCHAR(255) ,
         account_number VARCHAR(255) ,
         amount DECIMAL(10, 2) NOT NULL,
@@ -55,6 +56,7 @@ const tables = [
         date DATE NOT NULL,
         time TIME NOT NULL,
         transaction_type VARCHAR(50) NOT NULL,
+        bank VARCHAR(50),
         account_holder VARCHAR(255) NOT NULL,
         account_number VARCHAR(255) NOT NULL,
         amount DECIMAL(10, 2) NOT NULL,
@@ -100,6 +102,21 @@ const tables = [
         purchase_id BIGINT,
         FOREIGN KEY (purchase_id) REFERENCES Purchase(purchase_id)
     )
+    `,
+  `
+    CREATE TABLE IF NOT EXISTS ScheduledTransfer (
+      scheduled_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+      scheduled_date DATETIME NOT NULL,
+      bank VARCHAR(50) NOT NULL,
+      amount DECIMAL(15,2) NOT NULL,
+      account_number VARCHAR(50) NOT NULL,
+      account_holder VARCHAR(100) NOT NULL,
+      sub_account_id BIGINT,
+      FOREIGN KEY (sub_account_id) REFERENCES SubAccount(sub_account_id)
+    )
+    `,
+    `ALTER TABLE History ADD COLUMN bank VARCHAR(50);`,
+    `ALTER TABLE SubAccountHistory ADD COLUMN bank VARCHAR(50);
     `,
 ];
 
