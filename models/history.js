@@ -21,11 +21,11 @@ module.exports = function(sequelize, DataTypes) {
     },
     account_holder: {
       type: DataTypes.STRING(255),
-      allowNull: false
+      allowNull: true
     },
     account_number: {
       type: DataTypes.STRING(255),
-      allowNull: false
+      allowNull: true
     },
     amount: {
       type: DataTypes.DECIMAL(10,2),
