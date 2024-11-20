@@ -32,13 +32,23 @@ router.get('/',(req,res,next)=>{
   });
 });
 
-// //user의 계좌 이용 내역
-// router.get('/history',(req,res,next)=>{
-//     const userId=req.query.id;
-//     if (!userId){
-
-//     }
-// })
+//user의 계좌 이용 내역
+router.get('/history',(req,res,next)=>{
+    const userId=req.query.id;
+    if (!userId){
+        return res.status(400).json({message:"User Id is required"});
+    }
+    Account.findOne({where: { user_id: userId } }).then(account=>{
+        if(!account){
+            return res.status(404).json({message:"Account not found"});
+        }
+        History.findAll({where:{account_id:account.account_id}}).then(history=>{
+            res.json(history);
+        }).catch(err=>{
+            next(err);
+        });
+    })
+});
 
 
 module.exports = router;
