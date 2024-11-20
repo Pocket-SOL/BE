@@ -1,5 +1,5 @@
 const tables = [
-    `
+  `
     CREATE TABLE IF NOT EXISTS User (
         user_id BIGINT AUTO_INCREMENT PRIMARY KEY,
         birth DATE NOT NULL,
@@ -9,7 +9,7 @@ const tables = [
         parent_id BIGINT
     )
     `,
-    `
+  `
     CREATE TABLE IF NOT EXISTS Mission (
         mission_id BIGINT AUTO_INCREMENT PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
@@ -20,14 +20,14 @@ const tables = [
         FOREIGN KEY (user_id) REFERENCES User(user_id)
     )
     `,
-    `
+  `
     CREATE TABLE IF NOT EXISTS Account (
         account_id BIGINT AUTO_INCREMENT PRIMARY KEY,
         user_id BIGINT,
         FOREIGN KEY (user_id) REFERENCES User(user_id)
     )
     `,
-    `
+  `
     CREATE TABLE IF NOT EXISTS SubAccount (
         sub_account_id BIGINT AUTO_INCREMENT PRIMARY KEY,
         sub_account_usage VARCHAR(255) NOT NULL,
@@ -35,7 +35,7 @@ const tables = [
         FOREIGN KEY (account_id) REFERENCES Account(account_id)
     )
     `,
-    `
+  `
     CREATE TABLE IF NOT EXISTS History (
         history_id BIGINT AUTO_INCREMENT PRIMARY KEY,
         date DATE NOT NULL,
@@ -49,7 +49,7 @@ const tables = [
         FOREIGN KEY (account_id) REFERENCES Account(account_id)
     )
     `,
-    `
+  `
     CREATE TABLE IF NOT EXISTS SubAccountHistory (
         sub_history_id BIGINT AUTO_INCREMENT PRIMARY KEY,
         date DATE NOT NULL,
@@ -62,7 +62,7 @@ const tables = [
         FOREIGN KEY (sub_account_id) REFERENCES SubAccount(sub_account_id)
     )
     `,
-    `
+  `
     CREATE TABLE IF NOT EXISTS ActivityLog (
         log_id BIGINT AUTO_INCREMENT PRIMARY KEY,
         activity_type VARCHAR(50) NOT NULL,
@@ -73,7 +73,7 @@ const tables = [
         FOREIGN KEY (user_id) REFERENCES User(user_id)
     )
     `,
-    `
+  `
     CREATE TABLE IF NOT EXISTS Purchase (
         purchase_id BIGINT AUTO_INCREMENT PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
@@ -84,16 +84,15 @@ const tables = [
         FOREIGN KEY (user_id) REFERENCES User(user_id)
     )
     `,
-    `
+  `
     CREATE TABLE IF NOT EXISTS PurchaseUser (
         id BIGINT AUTO_INCREMENT PRIMARY KEY,
-        field1 VARCHAR(255),
-        field2 VARCHAR(255),
+        user_id  BIGINT,
         purchase_id BIGINT,
         FOREIGN KEY (purchase_id) REFERENCES Purchase(purchase_id)
     )
     `,
-    `
+  `
     CREATE TABLE IF NOT EXISTS Comment (
         comment_id BIGINT AUTO_INCREMENT PRIMARY KEY,
         content TEXT NOT NULL,
@@ -101,8 +100,7 @@ const tables = [
         purchase_id BIGINT,
         FOREIGN KEY (purchase_id) REFERENCES Purchase(purchase_id)
     )
-    `
-  ];
-  
-  module.exports = tables;
-  
+    `,
+];
+
+module.exports = tables;
