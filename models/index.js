@@ -16,7 +16,7 @@ db.Sequelize = Sequelize; //Sequelize팩키지에서 제공하는 각종 데이�
 
 
 db.User = require('./user')(sequelize, Sequelize.DataTypes); // user 모델 불러오기
-// User 모델 불러온 것 처럼 다른 모델들도 불러와서 쓰면 됨!
-
+db.Account = require('./account')(sequelize,Sequelize.DataTypes);
+db.History = require('./history')(sequelize,Sequelize.DataTypes);
 //db객체 외부로 노출하기 
 module.exports = db;

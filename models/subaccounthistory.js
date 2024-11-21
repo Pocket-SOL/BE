@@ -38,6 +38,10 @@ module.exports = function(sequelize, DataTypes) {
         model: 'subaccount',
         key: 'sub_account_id'
       }
+    },
+    bank: {
+      type: DataTypes.STRING(50),
+      allowNull: true
     }
   }, {
     sequelize,
