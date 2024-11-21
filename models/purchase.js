@@ -30,6 +30,14 @@ module.exports = function(sequelize, DataTypes) {
         model: 'user',
         key: 'user_id'
       }
+    },
+    participants: {
+      type: DataTypes.BIGINT,
+      allowNull: false,   
+    },
+    amount: {
+      type: DataTypes.BIGINT,
+      allowNull: false,   
     }
   }, {
     sequelize,
