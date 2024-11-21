@@ -156,9 +156,121 @@ router.post("/signup", async (req, res) => {
 	}
 });
 
+/**
+ * @swagger
+ * /api/users/login:
+ *   post:
+ *     summary: User Login
+ *     description: Logs in the user with the provided id and password, and returns a JWT token if successful.
+ *     tags:
+ *       - Users
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - id
+ *               - password
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: Unique alphanumeric ID for the user.
+ *                 example: johnDoe123
+ *               password:
+ *                 type: string
+ *                 description: The user's password.
+ *                 example: P@ssw0rd123
+ *     responses:
+ *       200:
+ *         description: Login successful and token generated.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Login successful
+ *                 token:
+ *                   type: string
+ *                   description: JWT token for authentication
+ *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicGFzc3dvcmQiOiIkMmEkM2I...etc"
+ *       400:
+ *         description: Bad request due to missing id or password.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: ID and password are required
+ *       401:
+ *         description: Unauthorized due to invalid password.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Invalid password
+ *       404:
+ *         description: User not found with the given id.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: User not found
+ *       500:
+ *         description: Server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: An unexpected error occurred
+ */
 // 로그인
 router.post("/login", async (req, res) => {
+	const { id, password } = req.body;
+
 	try {
+		// 입력값 검증
+		if (!id || !password) {
+			return res.status(400).json({ message: "ID and password are required" });
+		}
+
+		// 사용자 조회
+		const user = await User.findOne({ where: { id } });
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
+		// 비밀번호 검증
+		const isPasswordValid = await bcrypt.compare(password, user.password);
+		if (!isPasswordValid) {
+			return res.status(401).json({ message: "Invalid password" });
+		}
+
+		// JWT 토큰 생성
+		const token = jwt.sign(
+			{ id: user.id, password: user.password },
+			process.env.JWT_SECRET || "MyJWT",
+			{ expiresIn: "1h" },
+		);
+
+		res.status(200).json({
+			message: "Login successful",
+			token,
+		});
 	} catch (error) {
 		res.status(500).json({ error: error.message });
 	}
