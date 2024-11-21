@@ -267,9 +267,15 @@ router.post("/login", async (req, res) => {
 			{ expiresIn: "1h" },
 		);
 
+		// JWT 토큰을 쿠키에 저장
+		res.cookie("jwtToken", token, {
+			httpOnly: true, // JavaScript에서 쿠키를 접근할 수 없도록 설정
+			sameSite: "Strict", // 크로스 사이트 요청에서 쿠키를 보내지 않도록 설정
+			maxAge: 3600000, // 1시간
+		});
+
 		res.status(200).json({
 			message: "Login successful",
-			token,
 		});
 	} catch (error) {
 		res.status(500).json({ error: error.message });
