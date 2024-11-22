@@ -8,6 +8,8 @@ const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
 const accountsRouter = require("./routes/accounts");
 // const subaccountRouter = require("./routes/subaccounts");
+const purchasesRouter = require("./routes/purchases");
+const commentRouter = require("./routes/comment");
 //swagger 추가
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpecs = require("./config/swagger");
@@ -27,6 +29,8 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
 app.use("/api/users", usersRouter);
+app.use("/api/purchases", purchasesRouter);
+app.use("/api/comments", commentRouter);
 app.use("/api/accounts", accountsRouter);
 // app.use("/api/subaccounts", subaccountRouter);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpecs));

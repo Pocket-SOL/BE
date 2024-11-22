@@ -22,6 +22,23 @@ db.Sequelize = Sequelize; //Sequelize팩키지에서 제공하는 각종 데이�
 db.User = require("./user")(sequelize, Sequelize.DataTypes); // user 모델 불러오기
 db.Account = require("./account")(sequelize, Sequelize.DataTypes);
 db.History = require("./history")(sequelize, Sequelize.DataTypes);
+db.Purchase = require("./purchase")(sequelize, Sequelize.DataTypes);
+db.Purchaseuser = require("./purchaseuser")(sequelize, Sequelize.DataTypes);
+db.Purchase.sync({ alter: true })
+	.then((resp) => {
+		console.log("Database sync successful:", resp);
+	})
+	.catch((error) => {
+		console.error(error);
+	});
+db.Comment = require("./comment")(sequelize, Sequelize.DataTypes);
+db.Comment.sync({ alter: true })
+	.then((resp) => {
+		console.log("Database sync successful:", resp);
+	})
+	.catch((error) => {
+		console.error(error);
+	});
 db.SubAccount = require("./subaccount")(sequelize, Sequelize.DataTypes);
 db.SubAccountHistory = require("./subaccounthistory")(
 	sequelize,
