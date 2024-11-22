@@ -8,9 +8,36 @@ const {
 	ScheduledTransfer,
 } = require("../models");
 const { where } = require("sequelize");
-const account = require("../models/account");
 const { PARENT_BANK, CHILD_BANK } = require("../util/account_const");
-// const { default: CustomError } = require("../errors/customError");
+
+/**
+ * @swagger
+ * /api/accounts:
+ *   get:
+ *     tags:
+ *       - Accounts
+ *     summary: 유저의 잔액 조회 api
+ *     description: 쿼리 파라미터로 받아온 유저(id=user_id)에 대한 잔액
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: 유저 아이디(pk)
+ *     responses:
+ *       200:
+ *         description: 유저의 잔액
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalAmount:
+ *                   type: number
+ *                   description: 유저의 계좌 잔액
+ *                   example: 5800
+ */
 
 //user의 계좌잔액 불러오기
 router.get("/", (req, res, next) => {
