@@ -1,6 +1,6 @@
 const Sequelize = require("sequelize");
 module.exports = function (sequelize, DataTypes) {
-	const Purchase = sequelize.define(
+	return sequelize.define(
 		"purchase",
 		{
 			purchase_id: {
@@ -33,6 +33,14 @@ module.exports = function (sequelize, DataTypes) {
 					key: "user_id",
 				},
 			},
+			participants: {
+				type: DataTypes.BIGINT,
+				allowNull: false,
+			},
+			amount: {
+				type: DataTypes.BIGINT,
+				allowNull: false,
+			},
 		},
 		{
 			sequelize,
@@ -53,6 +61,5 @@ module.exports = function (sequelize, DataTypes) {
 			],
 		},
 	);
-
 	return Purchase;
 };
