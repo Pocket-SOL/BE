@@ -1,6 +1,6 @@
 const Sequelize = require("sequelize");
 module.exports = function (sequelize, DataTypes) {
-	return sequelize.define(
+	const Comment = sequelize.define(
 		"comment",
 		{
 			comment_id: {
@@ -50,4 +50,6 @@ module.exports = function (sequelize, DataTypes) {
 			],
 		},
 	);
+
+	return Comment;
 };
