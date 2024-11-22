@@ -73,6 +73,79 @@ router.get("/", (req, res, next) => {
 });
 
 //user의 계좌 이용 내역
+/**
+ * @swagger
+ * /api/accounts/history:
+ *   get:
+ *     tags:
+ *       - Accounts
+ *     summary: 계좌의 거래 내역 조회
+ *     description: 특정 유저(user_id)의 계좌의 거래 내역을 조회합니다.
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: 조회할 유저 ID (=> 해당 유저 계좌의 히스토리내역)
+ *     responses:
+ *       200:
+ *         description: 거래 내역 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   history_id:
+ *                     type: integer
+ *                     description: 거래 내역 ID
+ *                     example: 1
+ *                   date:
+ *                     type: string
+ *                     format: date
+ *                     description: 거래 날짜
+ *                     example: "2024-11-20"
+ *                   time:
+ *                     type: string
+ *                     format: time
+ *                     description: 거래 시간
+ *                     example: "10:00:00"
+ *                   transaction_type:
+ *                     type: string
+ *                     description: 거래 유형 (입금/출금)
+ *                     example: "입금"
+ *                   account_holder:
+ *                     type: string
+ *                     description: 거래 상대자 이름
+ *                     example: "도은"
+ *                   account_number:
+ *                     type: string
+ *                     description: 거래 계좌 번호
+ *                     example: "계좌번호"
+ *                   amount:
+ *                     type: string
+ *                     format: decimal
+ *                     description: 거래 금액
+ *                     example: "1000.00"
+ *                   photo:
+ *                     type: string
+ *                     format: binary
+ *                     nullable: true
+ *                     description: 거래와 관련된 사진 (있을 경우)
+ *                     example: null
+ *                   account_id:
+ *                     type: integer
+ *                     description: 계좌 ID
+ *                     example: 2
+ *                   bank:
+ *                     type: string
+ *                     nullable: true
+ *                     description: 은행 이름 (정보가 없으면 null)
+ *                     example: null
+ */
+
 router.get("/history", (req, res, next) => {
 	const userId = req.query.id;
 	if (!userId) {
