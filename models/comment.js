@@ -21,11 +21,20 @@ module.exports = function (sequelize, DataTypes) {
 					key: "purchase_id",
 				},
 			},
+			user_id: {
+				type: DataTypes.BIGINT,
+				allowNull: true,
+				references: {
+					model: "user",
+					key: "user_id",
+				},
+			},
 		},
 		{
 			sequelize,
 			tableName: "comment",
 			timestamps: true,
+
 			indexes: [
 				{
 					name: "PRIMARY",
