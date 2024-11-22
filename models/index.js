@@ -23,11 +23,20 @@ db.User = require("./user")(sequelize, Sequelize.DataTypes); // user 모델 불�
 db.Account = require("./account")(sequelize, Sequelize.DataTypes);
 db.History = require("./history")(sequelize, Sequelize.DataTypes);
 db.Purchase = require("./purchase")(sequelize, Sequelize.DataTypes);
+db.Purchaseuser = require("./purchaseuser")(sequelize, Sequelize.DataTypes);
 db.Purchase.sync({ alter: true })
 	.then((resp) => {
-		return console.log(resp);
+		console.log("Database sync successful:", resp);
 	})
-	.then((error) => {
+	.catch((error) => {
+		console.error(error);
+	});
+db.Comment = require("./comment")(sequelize, Sequelize.DataTypes);
+db.Comment.sync({ alter: true })
+	.then((resp) => {
+		console.log("Database sync successful:", resp);
+	})
+	.catch((error) => {
 		console.error(error);
 	});
 //db객체 외부로 노출하기
