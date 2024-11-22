@@ -10,7 +10,7 @@ const {
 const { where } = require("sequelize");
 const account = require("../models/account");
 const { PARENT_BANK, CHILD_BANK } = require("../util/account_const");
-const { default: CustomError } = require("../errors/customError");
+// const { default: CustomError } = require("../errors/customError");
 
 //user의 계좌잔액 불러오기
 router.get("/", (req, res, next) => {
@@ -65,17 +65,6 @@ router.get("/history", (req, res, next) => {
 	});
 });
 
-// 용돈 주기 (송금) 부모 계좌의 잔액에서도 빼야하고
-// 자녀 계좌의 잔액에는 더해줘야
-// subaccount랑 subaccount history는 추가해야하고
-// 부모 계좌의 잔액에서도 빼야하고
-// 자녀 계좌의 잔액에는 더해줘야하는데
-// account랑 subaccount에 다 들어가야하고
-// history도 subaccounthistory도 다 기록되어야함...
-// 부모 id랑 자녀 id
-// 이걸 이용해서
-// accounthistory에는 각각 출금 / 입금 총액
-// subaccounthistory에 고정/자유 각각 입금
 router.post("/:childId", async (req, res, next) => {
 	// console.log("request", req);
 	// console.log("req body", req.body);
@@ -83,6 +72,7 @@ router.post("/:childId", async (req, res, next) => {
 	const { childId } = req.params;
 
 	const temp = req.body;
+	console.log(temp);
 
 	const parentAccount = await Account.findOne({ where: { user_id: parentId } });
 	const childAccount = await Account.findOne({ where: { user_id: childId } });
@@ -150,16 +140,15 @@ router.post("/:childId", async (req, res, next) => {
 	// console.log(acc)
 
 	//subAccounts[0]이게 고정인지 자유인지 어케아냐
-	//전체에 하나씩 추가 /스프레드연산자
 	// 바디값의 reservation객체를
 	const sub = temp.reservations.map((e) => {
 		return { ...e, sub_account_id: acc.sub_account_id };
 	});
 
 	// 예약 송금 추가
-	// await ScheduledTransfer.bulkCreate([...sub]);
+	await ScheduledTransfer.bulkCreate([...sub]);
 
-	//-------------- 여기까지 완료 ---------- // 이 밑에 subaccounthistory에 고정비용 추가 된 것 + 자유 비용 추가된 것 구현 필요
+	//고정비용 추가 된 것 + 자유 비용 추가된 것
 
 	// 예약 송금 정보를 바탕으로 고정 지출 입금내역 + 자유 자금 입금내역 구분하여 각각 추가
 	// 고정 비용 총합 / to 의 amount 에서 고정비용 뺸 값
@@ -196,6 +185,7 @@ router.post("/:childId", async (req, res, next) => {
 		fixsubhistory,
 		freesubhistory,
 	]);
+	res.json({ code: 200, message: "용돈 송금 완료" });
 
 	// //세부계좌내역
 	// const subAccountHistorys = await SubAccountHistory.findAll({where: {sub_account_id: childAccount.sub_account_id}})
