@@ -165,6 +165,28 @@ router.get("/history", (req, res, next) => {
 	});
 });
 
+router.get("/withdrawals", (req, res, next) => {
+	const userId = req.query.id;
+	if (!userId) {
+		return res.status(400).json({ message: "User Id is required" });
+	}
+
+	Account.findOne({ where: { user_id: userId } }).then((account) => {
+		if (!account) {
+			return res.status(404).json({ message: "Account not found" });
+		}
+		History.sum("amount", {
+			where: { account_id: account.account_id, transaction_type: "출금" },
+		})
+			.then((total_withdrawal) => {
+				res.json({ total_withdrawal }); // 출금 기록만 반환
+			})
+			.catch((err) => {
+				next(err);
+			});
+	});
+});
+
 router.post("/:childId", async (req, res, next) => {
 	// console.log("request", req);
 	// console.log("req body", req.body);
