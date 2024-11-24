@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 
 const { Comment } = require("../models");
+const { default: userAuth } = require("../middlewares/userAuth");
+const user = require("../models/user");
 
 /**
  * @swagger
@@ -148,7 +150,7 @@ router.get("/:id", async (req, res) => {
  *                   example: "Internal server error"
  */
 
-router.post("/:purchaseid", async (req, res) => {
+router.post("/:id", async (req, res) => {
 	try {
 		const PurchaseId = req.params.id;
 		const { user_id, content } = req.body;
@@ -163,14 +165,154 @@ router.post("/:purchaseid", async (req, res) => {
 	}
 });
 
-// 사용자 인증 api 만들어지면 하기.
-// router.put("/:id", async (req, res) => {
-// 	try {
-// 		const commentId = req.params.id;
+/**
+ * @swagger
+ * /api/comments/{id}:
+ *   put:
+ *     summary: 댓글 수정
+ *     description: Update an existing comment by its ID.
+ *     tags:
+ *       - Comments
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: ID of the comment to update.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               content:
+ *                 type: string
+ *                 example: "This is an updated comment."
+ *                 description: The updated content of the comment.
+ *     responses:
+ *       200:
+ *         description: Successfully updated the comment.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                   example: true
+ *                 response:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 1
+ *                     purchase_id:
+ *                       type: integer
+ *                       example: 1
+ *                     user_id:
+ *                       type: integer
+ *                       example: 1
+ *                     content:
+ *                       type: string
+ *                       example: "This is an updated comment."
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-11-22T12:34:56.000Z"
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-11-23T12:34:56.000Z"
+ *       400:
+ *         description: Invalid input data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid input data"
+ *       404:
+ *         description: Comment not found
+ *       500:
+ *         description: Server error
+ */
+router.put("/:id", async (req, res) => {
+	try {
+		const comment_id = req.params.id;
+		const { content } = req.body;
 
-// 		const modified = await Comment.update({});
-// 	} catch (error) {
-// 		res.status(500).json({ error: error.message });
-// 	}
-// });
+		const updated = await Comment.update(
+			{ content },
+			{ where: { comment_id } },
+		);
+
+		if (updated[0] === 0) {
+			res.status(404).json({ ok: false, error: "댓글을 찾을 수 없습니다." });
+		} else {
+			const updatedComment = await Comment.findOne({ where: { comment_id } });
+			res.json({ ok: true, response: updatedComment });
+		}
+	} catch (error) {
+		res.status(500).json({ error: error.message });
+	}
+});
+
+/**
+ * @swagger
+ * /api/comments/{id}:
+ *   delete:
+ *     summary: 댓글 삭제
+ *     description: Delete an existing comment by its ID.
+ *     tags:
+ *       - Comments
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: ID of the comment to delete.
+ *     responses:
+ *       200:
+ *         description: Successfully deleted the comment.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                   example: true
+ *                 response:
+ *                   type: integer
+ *                   description: Number of deleted rows.
+ *                   example: 1
+ *       404:
+ *         description: Comment not found
+ *       500:
+ *         description: Server error
+ */
+router.delete("/:id", async (req, res) => {
+	try {
+		const comment_id = req.params.id;
+		const deleted = await Comment.destroy({
+			where: { comment_id },
+		});
+
+		if (deleted) {
+			res.json({ ok: true, response: deleted });
+		} else {
+			res.status(404).json({ ok: false, error: "댓글을 찾을 수 없습니다." });
+		}
+	} catch (error) {
+		res.status(500).json({ error: error.message });
+	}
+});
+
 module.exports = router;
