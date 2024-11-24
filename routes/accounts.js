@@ -165,6 +165,67 @@ router.get("/history", (req, res, next) => {
 	});
 });
 
+/**
+ * @swagger
+ * /api/accounts/withdrawals:
+ *   get:
+ *     summary: "Retrieve total withdrawal amount for a user"
+ *     description: "Fetches the total amount withdrawn from the user's account."
+ *     tags:
+ *       - "Accounts"
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         required: true
+ *         description: "The ID of the user whose withdrawal total is to be retrieved."
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *     responses:
+ *       200:
+ *         description: "Total withdrawal amount retrieved successfully."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 total_withdrawal:
+ *                   type: number
+ *                   format: float
+ *                   example: 5000.00
+ *                   description: "Total withdrawal amount for the user."
+ *       400:
+ *         description: "Bad Request - Missing or invalid user ID."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "User Id is required"
+ *       404:
+ *         description: "Not Found - Account not found for the provided user ID."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Account not found"
+ *       500:
+ *         description: "Internal Server Error - Unexpected error occurred."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error"
+ */
+
 router.get("/withdrawals", (req, res, next) => {
 	const userId = req.query.id;
 	if (!userId) {
