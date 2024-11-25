@@ -1,4 +1,3 @@
-
 var createError = require("http-errors");
 var express = require("express");
 const cors = require("cors");
@@ -14,6 +13,7 @@ const accountsRouter = require("./routes/accounts");
 const subaccountRouter = require("./routes/subaccounts");
 const purchasesRouter = require("./routes/purchases");
 const commentRouter = require("./routes/comment");
+const historyRouter = require("./routes/histories");
 
 //swagger 추가
 const swaggerUi = require("swagger-ui-express");
@@ -49,6 +49,7 @@ app.use("/api/purchases", purchasesRouter);
 app.use("/api/comments", commentRouter);
 app.use("/api/accounts", accountsRouter);
 app.use("/api/subaccounts", subaccountRouter);
+app.use("/api/histories", historyRouter);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 // catch 404 and forward to error handler
