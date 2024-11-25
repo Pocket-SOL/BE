@@ -42,7 +42,6 @@ jobs:
           script: |
             # EC2에서 Docker pull 및 기존 컨테이너 중단/삭제 후 새 컨테이너 시작
             cd /home/${{ secrets.EC2_USER }}  # EC2 홈 디렉토리로 이동
-            docker pull ${{ secrets.DOCKER_USERNAME }}/express-app:latest  # 최신 이미지 pull
-            docker stop express-app || true  # 기존 컨테이너 중지
-            docker rm express-app || true  # 기존 컨테이너 삭제
-            docker run -d --name express-app -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/express-app:latest  # 새 컨테이너 실행
+            docker-compose down
+            docker pull ${{ secrets.DOCKER_USERNAME }}/express-app:latest
+            docker-compose up -d
