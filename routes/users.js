@@ -10,34 +10,6 @@ const { format } = require("morgan");
 
 /**
  * @swagger
- * /api/users:
- *   get:
- *     summary: Get a list of users
- *     description: Returns a list of all users in the database
- *     tags:
- *       - Users
- *     responses:
- *       200:
- *         description: A list of users
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *       500:
- *         description: Server error
- */
-// 사용자 목록 조회
-router.get("/", async (req, res) => {
-	try {
-		const users = await User.findAll();
-		res.json(users);
-	} catch (error) {
-		res.status(500).json({ error: error.message });
-	}
-});
-
-/**
- * @swagger
  * /api/users/signup:
  *   post:
  *     summary: User Signup
@@ -277,6 +249,129 @@ router.post("/login", async (req, res) => {
 		res.status(200).json({
 			message: "Login successful",
 		});
+	} catch (error) {
+		res.status(500).json({ error: error.message });
+	}
+});
+
+/**
+ * @swagger
+ * /api/users/auth:
+ *   get:
+ *     summary: 사용자 식별 API
+ *     description: JWT 토큰을 검증하고 해당 사용자의 ID를 반환합니다.
+ *     tags:
+ *       - Users
+ *     responses:
+ *       200:
+ *         description: 성공적으로 사용자 ID를 반환합니다.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   description: 사용자 ID
+ *       401:
+ *         description: 인증되지 않은 요청 (토큰이 없거나 유효하지 않음)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: 오류 메시지
+ *       404:
+ *         description: 사용자를 찾을 수 없음
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: 오류 메시지
+ *       500:
+ *         description: 서버 오류
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: 오류 메시지
+ *     security:
+ *       - BearerAuth: []
+ */
+
+/**
+ * @swagger
+ * components:
+ *   securitySchemes:
+ *     BearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ */
+// 사용자 식별 API
+router.get("/auth", async (req, res) => {
+	try {
+		// 쿠키에서 JWT 토큰 가져오기
+		const token = req.cookies.jwtToken;
+		if (!token) {
+			return res
+				.status(401)
+				.json({ message: "Unauthorized: No token provided" });
+		}
+
+		// 토큰 검증
+		const decoded = jwt.verify(token, process.env.JWT_SECRET || "MyJWT");
+
+		// 사용자 조회
+		const user = await User.findOne({ where: { id: decoded.id } });
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
+		// 사용자 ID 반환
+		res.status(200).json({ id: user.id });
+	} catch (error) {
+		if (error.name === "JsonWebTokenError") {
+			return res.status(401).json({ message: "Invalid token" });
+		}
+		if (error.name === "TokenExpiredError") {
+			return res.status(401).json({ message: "Token expired" });
+		}
+		res.status(500).json({ error: error.message });
+	}
+});
+
+/**
+ * @swagger
+ * /api/users:
+ *   get:
+ *     summary: Get a list of users
+ *     description: Returns a list of all users in the database
+ *     tags:
+ *       - Users
+ *     responses:
+ *       200:
+ *         description: A list of users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *       500:
+ *         description: Server error
+ */
+// 사용자 목록 조회
+router.get("/", async (req, res) => {
+	try {
+		const users = await User.findAll();
+		res.json(users);
 	} catch (error) {
 		res.status(500).json({ error: error.message });
 	}
