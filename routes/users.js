@@ -529,6 +529,7 @@ router.get("/me", async (req, res) => {
 
 		// 사용자 조회
 		const user = await User.findOne({ where: { id: decoded.id } });
+		console.log(user);
 		if (!user) {
 			return res.status(404).json({ message: "User not found" });
 		}

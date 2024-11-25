@@ -160,16 +160,19 @@ router.get("/:id", async (req, res) => {
 router.post("/", userAuth, async (req, res) => {
 	try {
 		const { title, content, end_date, participants, amount } = req.body;
+		console.log(req.body);
 		const userId = req.user_id; // 미들웨어에서 설정한 사용자 ID 사용
-		console.log("purchase", userId);
+		const userName = req.user_username;
+		console.log("purchase", userId, userName);
 		const purchaseRegister = await Purchase.create({
 			title,
 			status: "ongoing", // 생성 시 기본 상태 '진행중'
 			content,
 			end_date,
+			user_id: userId, // 사용자를 구별하기 위해 추가
+			username: userName,
 			participants,
 			amount,
-			user_id: userId, // 사용자를 구별하기 위해 추가
 		});
 		res.json({ ok: true, response: purchaseRegister });
 	} catch (error) {

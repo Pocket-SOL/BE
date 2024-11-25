@@ -21,6 +21,7 @@ const userAuth = async (req, res, next) => {
 
 		// 사용자 ID 요청 객체에 추가.
 		req.user_id = user.user_id;
+		req.user_username = user.username;
 
 		next();
 	} catch (error) {
