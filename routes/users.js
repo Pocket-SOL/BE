@@ -251,6 +251,7 @@ router.post("/login", async (req, res) => {
 
 		res.status(200).json({
 			message: "Login successful",
+			user_id: user.user_id,
 			username: user.username,
 			birth: user.birth,
 			phone: user.phone,
@@ -359,89 +360,37 @@ router.get("/auth", async (req, res) => {
 
 /**
  * @swagger
- * /api/users:
+ * /api/users/my-children:
  *   get:
- *     summary: Get a list of users
- *     description: Returns a list of all users in the database
+ *     summary: Get children by parent_id
+ *     description: Returns a list of users (id and name) whose parent_id matches the provided parent_id
  *     tags:
  *       - Users
+ *     parameters:
+ *       - in: query
+ *         name: parent_id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The parent_id to filter users
  *     responses:
  *       200:
- *         description: A list of users
+ *         description: A list of user details (id and name)
  *         content:
  *           application/json:
  *             schema:
  *               type: array
- *       500:
- *         description: Server error
- */
-// 사용자 목록 조회
-router.get("/", async (req, res) => {
-	try {
-		const users = await User.findAll();
-		res.json(users);
-	} catch (error) {
-		res.status(500).json({ error: error.message });
-	}
-});
-
-/**
- * @swagger
- * /api/users/me:
- *   get:
- *     summary: 현재 로그인한 사용자 정보 가져오기
- *     description: 클라이언트 쿠키에 저장된 JWT 토큰을 이용해 사용자 정보를 반환합니다.
- *     tags:
- *       - Users
- *     responses:
- *       200:
- *         description: 사용자 정보 반환 성공
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 username:
- *                   type: string
- *                   description: 사용자의 이름
- *                   example: JohnDoe
- *                 birth:
- *                   type: string
- *                   format: date
- *                   description: 사용자의 생년월일
- *                   example: 1990-01-01
- *                 phone:
- *                   type: string
- *                   description: 사용자의 전화번호
- *                   example: "010-1234-5678"
- *                 role:
- *                   type: string
- *                   description: 사용자의 역할
- *                   example: parent
- *       401:
- *         description: 인증 실패 (토큰 없음, 유효하지 않음, 또는 만료됨)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   description: 에러 메시지
- *                   example: "Unauthorized: No token provided"
- *       404:
- *         description: 사용자를 찾을 수 없음
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   description: 에러 메시지
- *                   example: User not found
- *       500:
- *         description: 서버 에러
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     description: User's ID
+ *                   name:
+ *                     type: string
+ *                     description: User's name
+ *       400:
+ *         description: Missing or invalid parent_id
  *         content:
  *           application/json:
  *             schema:
@@ -449,8 +398,61 @@ router.get("/", async (req, res) => {
  *               properties:
  *                 error:
  *                   type: string
- *                   description: 서버 에러 메시지
+ *                   description: Error message
+ *       404:
+ *         description: No users found for the provided parent_id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: Error message
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: Error message
  */
+// parent_id로 사용자 조회 (id와 name 반환)
+router.get("/my-children", async (req, res) => {
+	try {
+		const { parent_id } = req.query;
+
+		// parent_id가 제공되지 않은 경우
+		if (!parent_id) {
+			return res.status(400).json({ error: "parent_id is required" });
+		}
+
+		// parent_id가 일치하는 모든 사용자 조회
+		const users = await User.findAll({
+			where: { parent_id },
+			attributes: ["id", "username"], // 필요한 필드만 선택
+		});
+
+		if (!users || users.length === 0) {
+			return res
+				.status(404)
+				.json({ error: "No users found with the provided parent_id" });
+		}
+
+		// id와 name을 포함한 배열 반환
+		const userDetails = users.map((user) => ({
+			id: user.id,
+			name: user.username,
+		}));
+
+		res.json(userDetails);
+	} catch (error) {
+		res.status(500).json({ error: error.message });
+	}
+});
 
 /**
  * @swagger
@@ -533,6 +535,7 @@ router.get("/me", async (req, res) => {
 
 		// 사용자 정보 반환 (username, birth, phone, role)
 		res.status(200).json({
+			user_id: user.user_id,
 			username: user.username,
 			birth: user.birth,
 			phone: user.phone,
