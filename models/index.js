@@ -74,5 +74,14 @@ db.User.hasMany(db.Comment, { foreignKey: "user_id" });
 // 	.catch((err) => {
 // 		console.error(err);
 // 	});
+
+db.User.sync({ alter: true })
+	.then((result) => {
+		console.log(result);
+	})
+	.catch((err) => {
+		console.error(err);
+	});
+
 //db객체 외부로 노출하기
 module.exports = db;

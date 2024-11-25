@@ -12,42 +12,44 @@ const { format } = require("morgan");
  * @swagger
  * /api/users/signup:
  *   post:
- *     summary: User Signup
- *     description: Creates a new user with the provided information (id, password, birth, username).
- *     tags:
- *       - Users
+ *     summary: 회원가입
+ *     description: 새로운 사용자를 생성합니다. 사용자의 ID, 비밀번호, 사용자 이름, 생일, 전화번호, 역할을 입력받습니다.
+ *     tags: [Users]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - id
- *               - password
- *               - birth
- *               - username
  *             properties:
  *               id:
  *                 type: string
- *                 description: Unique alphanumeric ID for the user.
+ *                 description: 사용자 ID (영문자와 숫자로 구성)
  *                 example: johnDoe123
  *               password:
  *                 type: string
- *                 description: User's password to be hashed before saving.
+ *                 description: 사용자 비밀번호
  *                 example: P@ssw0rd123
+ *               username:
+ *                 type: string
+ *                 description: 사용자 이름
+ *                 example: John Doe
  *               birth:
  *                 type: string
  *                 format: date
- *                 description: User's birth date in YYYY-MM-DD format.
+ *                 description: 사용자 생일 (yyyy-mm-dd 형식)
  *                 example: 1995-08-15
- *               username:
+ *               phone:
  *                 type: string
- *                 description: User's display name.
- *                 example: John Doe
+ *                 description: 사용자 전화번호
+ *                 example: +821012345678
+ *               role:
+ *                 type: string
+ *                 description: 사용자 역할 (parent 또는 child)
+ *                 example: parent
  *     responses:
  *       201:
- *         description: User registered successfully.
+ *         description: 사용자 등록 성공
  *         content:
  *           application/json:
  *             schema:
@@ -57,7 +59,7 @@ const { format } = require("morgan");
  *                   type: string
  *                   example: User registered successfully
  *       400:
- *         description: Bad request due to missing or invalid fields.
+ *         description: 입력값 누락 또는 유효하지 않은 값
  *         content:
  *           application/json:
  *             schema:
@@ -67,7 +69,7 @@ const { format } = require("morgan");
  *                   type: string
  *                   example: All fields are required
  *       409:
- *         description: Conflict error due to duplicate ID.
+ *         description: 중복된 ID가 존재
  *         content:
  *           application/json:
  *             schema:
@@ -77,7 +79,7 @@ const { format } = require("morgan");
  *                   type: string
  *                   example: ID already exists
  *       500:
- *         description: Server error.
+ *         description: 서버 에러
  *         content:
  *           application/json:
  *             schema:
@@ -85,17 +87,16 @@ const { format } = require("morgan");
  *               properties:
  *                 error:
  *                   type: string
- *                   example: An unexpected error occurred
+ *                   example: Internal Server Error
  */
-
 // 회원가입
 router.post("/signup", async (req, res) => {
-	const { id, password, birth, username } = req.body;
+	const { id, password, username, birth, phone, role } = req.body;
 	const salt = await bcrypt.genSalt();
 
 	try {
 		// 입력값 검증
-		if (!id || !password || !birth || !username) {
+		if (!id || !password || !username || !birth || !phone || !role) {
 			return res.status(400).json({ message: "All fields are required" });
 		}
 
@@ -114,9 +115,11 @@ router.post("/signup", async (req, res) => {
 		// 새로운 사용자 생성
 		const newUser = await User.create({
 			id,
+			password: hashedPassword,
 			username,
 			birth,
-			password: hashedPassword,
+			phone,
+			role,
 		});
 		console.log(newUser);
 
