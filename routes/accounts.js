@@ -393,5 +393,68 @@ router.post("/:childId", async (req, res, next) => {
 	//   return { ...temp.to, sub_history_id:  }
 	// })
 });
+/**
+ * @swagger
+ * /api/accounts/number:
+ *   get:
+ *     tags:
+ *       - Accounts
+ *     summary: Get Account Number
+ *     description: This endpoint retrieves the account number for a user by their ID.
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The user ID to find the associated account number.
+ *     responses:
+ *       200:
+ *         description: The account number for the user.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 account_number:
+ *                   type: string
+ *                   description: The account number associated with the user.
+ *       400:
+ *         description: Bad Request - If the user ID is not provided.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Error message.
+ *       500:
+ *         description: Internal Server Error - If an error occurs while querying the database.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Error message.
+ */
+router.get("/number", (req, res, next) => {
+	const userId = req.query.id;
+
+	if (!userId) {
+		return res.status(400).json({ message: "User Id is required" });
+	}
+	Account.findOne({ where: { user_id: userId } })
+		.then((account) => {
+			res.json({
+				account_number: account.account_number,
+			});
+		})
+		.catch((err) => {
+			next(err);
+		});
+});
 
 module.exports = router;

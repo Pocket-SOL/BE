@@ -21,6 +21,8 @@ const options = {
 		servers: [
 			{
 				url: "http://localhost:3000/",
+			},
+			{
 				url: "http://52.79.58.245:8080/",
 			},
 		],
