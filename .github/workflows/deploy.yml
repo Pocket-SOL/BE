@@ -40,8 +40,13 @@ jobs:
           username: ${{ secrets.EC2_USER }}  # EC2 사용자
           key: ${{ secrets.EC2_SSH_KEY }}  # EC2 SSH 키
           script: |
-            # EC2에서 Docker pull 및 기존 컨테이너 중단/삭제 후 새 컨테이너 시작
-            cd /home/${{ secrets.EC2_USER }}  # EC2 홈 디렉토리로 이동
-            docker-compose down
+            # backend_network가 없으면 생성
+            docker network ls | grep ubuntu_app-network || docker network create ubuntu_app-network
+
+            # 최신 이미지를 pull하고 기존 컨테이너를 중단 및 삭제 후 새로 시작
             docker pull ${{ secrets.DOCKER_USERNAME }}/express-app:latest
-            docker-compose up -d
+            docker stop express-app || true
+            docker rm express-app || true
+            
+            # Express 컨테이너를 backend_network에 연결하여 실행
+            docker run -d --name express-app --network ubuntu_app-network -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/express-app:latest

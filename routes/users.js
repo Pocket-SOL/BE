@@ -42,7 +42,7 @@ const { format } = require("morgan");
  *               phone:
  *                 type: string
  *                 description: 사용자 전화번호
- *                 example: +821012345678
+ *                 example: 821012345678
  *               role:
  *                 type: string
  *                 description: 사용자 역할 (parent 또는 child)
@@ -251,8 +251,108 @@ router.post("/login", async (req, res) => {
 
 		res.status(200).json({
 			message: "Login successful",
+			username: user.username,
+			birth: user.birth,
+			phone: user.phone,
+			role: user.role,
 		});
 	} catch (error) {
+		res.status(500).json({ error: error.message });
+	}
+});
+
+/**
+ * @swagger
+ * /api/users/auth:
+ *   get:
+ *     summary: 사용자 식별 API
+ *     description: JWT 토큰을 검증하고 해당 사용자의 ID를 반환합니다.
+ *     tags:
+ *       - Users
+ *     responses:
+ *       200:
+ *         description: 성공적으로 사용자 ID를 반환합니다.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   description: 사용자 ID
+ *       401:
+ *         description: 인증되지 않은 요청 (토큰이 없거나 유효하지 않음)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: 오류 메시지
+ *
+ *       404:
+ *         description: 사용자를 찾을 수 없음
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: 오류 메시지
+ *       500:
+ *         description: 서버 오류
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: 오류 메시지
+ *     security:
+ *       - BearerAuth: []
+ */
+
+/**
+ * @swagger
+ * components:
+ *   securitySchemes:
+ *     BearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ */
+// 사용자 식별 API
+router.get("/auth", async (req, res) => {
+	try {
+		// 쿠키에서 JWT 토큰 가져오기
+		const token = req.cookies.jwtToken;
+		if (!token) {
+			return res
+				.status(401)
+				.json({ message: "Unauthorized No token provided" });
+		}
+
+		// 토큰 검증
+		const decoded = jwt.verify(token, process.env.JWT_SECRET || "MyJWT");
+
+		// 사용자 조회
+		const user = await User.findOne({ where: { id: decoded.id } });
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
+		// 사용자 ID 반환
+		res.status(200).json({ id: user.id });
+	} catch (error) {
+		if (error.name === "JsonWebTokenError") {
+			return res.status(401).json({ message: "Invalid token" });
+		}
+		if (error.name === "TokenExpiredError") {
+			return res.status(401).json({ message: "Token expired" });
+		}
 		res.status(500).json({ error: error.message });
 	}
 });
@@ -287,19 +387,79 @@ router.get("/", async (req, res) => {
 
 /**
  * @swagger
- * /api/users/{userId}:
+ * /api/users/me:
  *   get:
- *     summary: Get user information by userId
- *     description: Returns the information of the user based on the provided userId
+ *     summary: 현재 로그인한 사용자 정보 가져오기
+ *     description: 클라이언트 쿠키에 저장된 JWT 토큰을 이용해 사용자 정보를 반환합니다.
  *     tags:
  *       - Users
- *     parameters:
- *       - name: userId
- *         in: path
- *         description: The ID of the user to retrieve information for
- *         required: true
- *         schema:
- *           type: integer
+ *     responses:
+ *       200:
+ *         description: 사용자 정보 반환 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 username:
+ *                   type: string
+ *                   description: 사용자의 이름
+ *                   example: JohnDoe
+ *                 birth:
+ *                   type: string
+ *                   format: date
+ *                   description: 사용자의 생년월일
+ *                   example: 1990-01-01
+ *                 phone:
+ *                   type: string
+ *                   description: 사용자의 전화번호
+ *                   example: "010-1234-5678"
+ *                 role:
+ *                   type: string
+ *                   description: 사용자의 역할
+ *                   example: parent
+ *       401:
+ *         description: 인증 실패 (토큰 없음, 유효하지 않음, 또는 만료됨)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: 에러 메시지
+ *                   example: "Unauthorized: No token provided"
+ *       404:
+ *         description: 사용자를 찾을 수 없음
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: 에러 메시지
+ *                   example: User not found
+ *       500:
+ *         description: 서버 에러
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: 서버 에러 메시지
+ */
+
+/**
+ * @swagger
+ * /api/users/me:
+ *   get:
+ *     summary: Get current user information
+ *     description: Retrieve the information of the currently authenticated user based on the JWT token stored in cookies.
+ *     tags:
+ *       - Users
  *     responses:
  *       200:
  *         description: Successfully retrieved user information
@@ -308,9 +468,29 @@ router.get("/", async (req, res) => {
  *             schema:
  *               type: object
  *               properties:
- *                 userId:
- *                   type: integer
- *                   description: The user ID of the user
+ *                 username:
+ *                   type: string
+ *                   example: johndoe
+ *                 birth:
+ *                   type: string
+ *                   format: date
+ *                   example: 1990-01-01
+ *                 phone:
+ *                   type: string
+ *                   example: "010-1234-5678"
+ *                 role:
+ *                   type: string
+ *                   example: admin
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Unauthorized: No token provided"
  *       404:
  *         description: User not found
  *         content:
@@ -320,7 +500,7 @@ router.get("/", async (req, res) => {
  *               properties:
  *                 message:
  *                   type: string
- *                   example: User not found
+ *                   example: "User not found"
  *       500:
  *         description: Internal server error
  *         content:
@@ -330,21 +510,41 @@ router.get("/", async (req, res) => {
  *               properties:
  *                 error:
  *                   type: string
- *                   example: "Error message"
+ *                   example: "An unexpected error occurred"
  */
-//내정보확인
-router.get("/:userId", async (req, res) => {
-	const { userId } = req.params;
+router.get("/me", async (req, res) => {
 	try {
-		const user = await User.findOne({ where: { user_id: userId } });
+		// 쿠키에서 JWT 토큰 가져오기
+		const token = req.cookies.jwtToken;
+		if (!token) {
+			return res
+				.status(401)
+				.json({ message: "Unauthorized: No token provided" });
+		}
+
+		// 토큰 검증
+		const decoded = jwt.verify(token, process.env.JWT_SECRET || "MyJWT");
+
+		// 사용자 조회
+		const user = await User.findOne({ where: { id: decoded.id } });
 		if (!user) {
 			return res.status(404).json({ message: "User not found" });
 		}
 
+		// 사용자 정보 반환 (username, birth, phone, role)
 		res.status(200).json({
-			userId: user.user_id,
+			username: user.username,
+			birth: user.birth,
+			phone: user.phone,
+			role: user.role,
 		});
 	} catch (error) {
+		if (error.name === "JsonWebTokenError") {
+			return res.status(401).json({ message: "Invalid token" });
+		}
+		if (error.name === "TokenExpiredError") {
+			return res.status(401).json({ message: "Token expired" });
+		}
 		res.status(500).json({ error: error.message });
 	}
 });
