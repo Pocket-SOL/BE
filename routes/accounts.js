@@ -165,6 +165,67 @@ router.get("/history", (req, res, next) => {
 	});
 });
 
+/**
+ * @swagger
+ * /api/accounts/withdrawals:
+ *   get:
+ *     summary: "Retrieve total withdrawal amount for a user"
+ *     description: "Fetches the total amount withdrawn from the user's account."
+ *     tags:
+ *       - "Accounts"
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         required: true
+ *         description: "The ID of the user whose withdrawal total is to be retrieved."
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *     responses:
+ *       200:
+ *         description: "Total withdrawal amount retrieved successfully."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 total_withdrawal:
+ *                   type: number
+ *                   format: float
+ *                   example: 5000.00
+ *                   description: "Total withdrawal amount for the user."
+ *       400:
+ *         description: "Bad Request - Missing or invalid user ID."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "User Id is required"
+ *       404:
+ *         description: "Not Found - Account not found for the provided user ID."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Account not found"
+ *       500:
+ *         description: "Internal Server Error - Unexpected error occurred."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error"
+ */
+
 router.get("/withdrawals", (req, res, next) => {
 	const userId = req.query.id;
 	if (!userId) {
@@ -263,50 +324,65 @@ router.post("/:childId", async (req, res, next) => {
 
 	//subAccounts[0]이게 고정인지 자유인지 어케아냐
 	// 바디값의 reservation객체를
-	const sub = temp.reservations.map((e) => {
-		return { ...e, sub_account_id: acc.sub_account_id };
-	});
+	// const sub = temp.reservations.map((e) => {
+	// 	return { ...e, sub_account_id: acc.sub_account_id };
+	// });
 
-	// 예약 송금 추가
-	await ScheduledTransfer.bulkCreate([...sub]);
+	// 예약 송금 변수를 미리 정의
+	let sub = [];
 
-	//고정비용 추가 된 것 + 자유 비용 추가된 것
+	// 예약 송금이 추가된 경우에만 처리
+	if (
+		temp &&
+		temp.reservations &&
+		Array.isArray(temp.reservations) &&
+		temp.reservations.length > 0
+	) {
+		sub = temp.reservations.map((e) => {
+			return { ...e, sub_account_id: acc.sub_account_id };
+		});
 
-	// 예약 송금 정보를 바탕으로 고정 지출 입금내역 + 자유 자금 입금내역 구분하여 각각 추가
-	// 고정 비용 총합 / to 의 amount 에서 고정비용 뺸 값
-	const fixAmount = temp.reservations.reduce(
-		(acc, reservation) => acc + reservation.amount,
-		0,
-	);
+		// 예약 송금 추가
+		await ScheduledTransfer.bulkCreate([...sub]);
 
-	const freeAmount = temp.from.amount - fixAmount;
-	// console.log(fixAmount, freeAmount);
-	const fixsubhistory = {
-		sub_account_id: acc.sub_account_id,
-		bank: CHILD_BANK,
-		transaction_type: "입금",
-		account_holder: temp.to.account_holder,
-		account_number: parentAccount.account_number || "계좌번호",
-		amount: fixAmount,
-		date: date,
-		time: time,
-	};
+		//고정비용 추가 된 것 + 자유 비용 추가된 것
 
-	const freesubhistory = {
-		sub_account_id: free.sub_account_id,
-		bank: CHILD_BANK,
-		transaction_type: "입금",
-		account_holder: temp.to.account_holder,
-		account_number: parentAccount.account_number || "계좌번호",
-		amount: freeAmount,
-		date: date,
-		time: time,
-	};
+		// 예약 송금 정보를 바탕으로 고정 지출 입금내역 + 자유 자금 입금내역 구분하여 각각 추가
+		// 고정 비용 총합 / to 의 amount 에서 고정비용 뺸 값
+		const fixAmount = temp.reservations.reduce(
+			(acc, reservation) => acc + reservation.amount,
+			0,
+		);
 
-	const subhistories = await SubAccountHistory.bulkCreate([
-		fixsubhistory,
-		freesubhistory,
-	]);
+		const freeAmount = temp.from.amount - fixAmount;
+		// console.log(fixAmount, freeAmount);
+		const fixsubhistory = {
+			sub_account_id: acc.sub_account_id,
+			bank: CHILD_BANK,
+			transaction_type: "입금",
+			account_holder: temp.to.account_holder,
+			account_number: parentAccount.account_number || "계좌번호",
+			amount: fixAmount,
+			date: date,
+			time: time,
+		};
+
+		const freesubhistory = {
+			sub_account_id: free.sub_account_id,
+			bank: CHILD_BANK,
+			transaction_type: "입금",
+			account_holder: temp.to.account_holder,
+			account_number: parentAccount.account_number || "계좌번호",
+			amount: freeAmount,
+			date: date,
+			time: time,
+		};
+
+		const subhistories = await SubAccountHistory.bulkCreate([
+			fixsubhistory,
+			freesubhistory,
+		]);
+	}
 	res.json({ code: 200, message: "용돈 송금 완료" });
 
 	// //세부계좌내역
