@@ -6,6 +6,8 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 
+// userAuth 미들웨어 등록
+const userAuth = require("./middlewares/userAuth");
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
 const accountsRouter = require("./routes/accounts");
@@ -37,6 +39,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+
+// userAuth 전역적으로 적용
+// app.use(userAuth);
 
 app.use("/", indexRouter);
 app.use("/api/users", usersRouter);

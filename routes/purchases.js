@@ -1,13 +1,7 @@
-/**
- * @swagger
- * tags:
- *   name: Purchases
- *   description: 구매 관련 API
- */
-
 const express = require("express");
 const router = express.Router();
 const { Purchase, Purchaseuser } = require("../models");
+const userAuth = require("../middlewares/userAuth");
 /**
  * @swagger
  * /api/purchases:
@@ -163,23 +157,25 @@ router.get("/:id", async (req, res) => {
  *         description: 서버 에러
  */
 
-router.post("/", async (req, res) => {
+router.post("/", userAuth, async (req, res) => {
 	try {
 		const { title, content, end_date, participants, amount } = req.body;
+		const userId = req.user_id; // 미들웨어에서 설정한 사용자 ID 사용
+		console.log("purchase", userId);
 		const purchaseRegister = await Purchase.create({
 			title,
-			status: "ongoing", //생성할때는 default값으로 '진행중'으로 설정
+			status: "ongoing", // 생성 시 기본 상태 '진행중'
 			content,
 			end_date,
 			participants,
 			amount,
+			user_id: userId, // 사용자를 구별하기 위해 추가
 		});
 		res.json({ ok: true, response: purchaseRegister });
 	} catch (error) {
 		res.status(500).json({ error: error.message });
 	}
 });
-
 /**
  * @swagger
  * /api/purchases/{id}:
@@ -287,11 +283,20 @@ router.put("/:id", async (req, res) => {
  */
 
 router.delete("/:id", async (req, res) => {
-	const id = req.params.id;
-	const deleted = await Purchase.destroy({
-		where: { purchase_id: id },
-	});
-	res.json({ ok: true, response: deleted });
+	try {
+		const id = req.params.id;
+		const deleted = await Purchase.destroy({
+			where: { purchase_id: id },
+		});
+
+		if (deleted) {
+			res.json({ ok: true, response: deleted });
+		} else {
+			res.status(404).json({ ok: false, error: "구매를 찾을 수 없습니다." });
+		}
+	} catch (error) {
+		res.status(500).json({ ok: false, error: error.message });
+	}
 });
 
 module.exports = router;
