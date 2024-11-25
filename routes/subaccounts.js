@@ -95,7 +95,7 @@ router.get("/", async (req, res, next) => {
 		where: {
 			sub_account_id: {
 				[Sequelize.Op.in]: Sequelize.literal(
-					`(SELECT sub_account_id FROM subaccount WHERE account_id = 2)`,
+					`(SELECT sub_account_id FROM subaccount WHERE account_id = ${userId})`,
 				),
 			},
 		},
