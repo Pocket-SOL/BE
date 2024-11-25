@@ -394,4 +394,21 @@ router.post("/:childId", async (req, res, next) => {
 	// })
 });
 
+router.get("/number", (req, res, next) => {
+	const userId = req.query.id;
+
+	if (!userId) {
+		return res.status(400).json({ message: "User Id is required" });
+	}
+	Account.findOne({ where: { user_id: userId } })
+		.then((account) => {
+			res.json({
+				account_number: account.account_number,
+			});
+		})
+		.catch((err) => {
+			next(err);
+		});
+});
+
 module.exports = router;

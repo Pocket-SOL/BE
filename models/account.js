@@ -17,6 +17,10 @@ module.exports = function (sequelize, DataTypes) {
 					key: "user_id",
 				},
 			},
+			account_number: {
+				type: DataTypes.STRING(20),
+				allowNull: false,
+			},
 		},
 		{
 			sequelize,
