@@ -1,5 +1,7 @@
+
 var createError = require("http-errors");
 var express = require("express");
+const cors = require("cors");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
@@ -10,6 +12,7 @@ const accountsRouter = require("./routes/accounts");
 const subaccountRouter = require("./routes/subaccounts");
 const purchasesRouter = require("./routes/purchases");
 const commentRouter = require("./routes/comment");
+
 //swagger 추가
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpecs = require("./config/swagger");
@@ -17,6 +20,14 @@ const swaggerSpecs = require("./config/swagger");
 const sequelize = require("./models/index.js").sequelize;
 const app = express();
 
+// cors 미들웨어 설정 - 다른 미들웨어보다 앞에 위치해야 함
+app.use(
+	cors({
+		origin: "http://localhost:5173", // Vite 개발 서버 주소
+		methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+		allowedHeaders: ["Content-Type"],
+	}),
+);
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
