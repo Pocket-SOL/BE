@@ -41,7 +41,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}  # EC2 SSH 키
           script: |
             # backend_network가 없으면 생성
-            docker network ls | grep backend_network || docker network create backend_network
+            docker network ls | grep app-network || docker network create app-network
 
             # 최신 이미지를 pull하고 기존 컨테이너를 중단 및 삭제 후 새로 시작
             docker pull ${{ secrets.DOCKER_USERNAME }}/express-app:latest
@@ -49,4 +49,4 @@ jobs:
             docker rm express-app || true
             
             # Express 컨테이너를 backend_network에 연결하여 실행
-            docker run -d --name express-app --network backend_network -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/express-app:latest
+            docker run -d --name express-app --network app-network -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/express-app:latest
