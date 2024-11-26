@@ -349,6 +349,112 @@ router.get("/withdrawals", (req, res, next) => {
 			});
 	});
 });
+/**
+ * @swagger
+ * /api/accounts/{childId}:
+ *   post:
+ *     tags:
+ *       - Accounts
+ *     summary: 자녀에게 용돈 송금
+ *     description: 부모가 자녀에게 용돈을 송금합니다. 고정비용과 자유금액으로 나누어 송금할 수 있습니다.
+ *     parameters:
+ *       - in: path
+ *         name: childId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: 자녀 ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - from
+ *               - to
+ *             properties:
+ *               from:
+ *                 type: object
+ *                 properties:
+ *                   transaction_type:
+ *                     type: string
+ *                     description: 거래 유형
+ *                     example: "출금"
+ *                   account_holder:
+ *                     type: string
+ *                     description: 송금자(부모) 이름
+ *                     example: "하민지"
+ *                   amount:
+ *                     type: number
+ *                     description: 송금할 금액
+ *                     example: 7
+ *               to:
+ *                 type: object
+ *                 properties:
+ *                   transaction_type:
+ *                     type: string
+ *                     description: 거래 유형
+ *                     example: "입금"
+ *                   account_holder:
+ *                     type: string
+ *                     description: 수신자(자녀) 이름
+ *                     example: "김도은"
+ *                   amount:
+ *                     type: number
+ *                     description: 수신할 금액
+ *                     example: 7
+ *               reservations:
+ *                 type: array
+ *                 description: 고정비용 예약 송금 목록 (선택사항)
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     account_holder:
+ *                       type: string
+ *                       description: 수취인 이름
+ *                       example: "수학학원"
+ *                     bank:
+ *                       type: string
+ *                       description: 은행명
+ *                       example: "국민은행"
+ *                     account_number:
+ *                       type: string
+ *                       description: 계좌번호
+ *                       example: "1002123012345"
+ *                     amount:
+ *                       type: number
+ *                       description: 예약 송금 금액
+ *                       example: 10000
+ *                     scheduled_date:
+ *                       type: string
+ *                       description: 예약 송금 날짜
+ *                       example: "2024-12-05"
+ *     responses:
+ *       200:
+ *         description: 송금 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                   example: 200
+ *                 message:
+ *                   type: string
+ *                   example: "용돈 송금 완료"
+ *       404:
+ *         description: 잔액 부족
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "돈없음"
+ */
 
 router.post("/:childId", async (req, res, next) => {
 	// console.log("request", req);
