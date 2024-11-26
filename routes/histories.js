@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { History } = require("../models");
 const { where } = require("sequelize");
-
+const upload = require("../config/multer");
 /**
  * @swagger
  * /:
@@ -58,4 +58,29 @@ router.get("/", (req, res, next) => {
 		});
 });
 
+router.post("/img/", upload.single("image"), (req, res, next) => {
+	try {
+		const images = req.file;
+		//s3 키 , url
+		const imageKey = images.key;
+		const imageUrl = images.location;
+
+		//response
+		res.status(200).json({
+			success: true,
+			message: "File uplaod successfully",
+			data: {
+				imageUrl,
+				imageKey,
+			},
+		});
+	} catch (error) {
+		console.error("File uplaod error", error);
+		res.status(500).json({
+			success: false,
+			message: "Failed to uplaod file",
+			error: error.message,
+		});
+	}
+});
 module.exports = router;
