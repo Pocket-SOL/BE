@@ -300,6 +300,7 @@ router.post("/:childId", async (req, res, next) => {
 		date: date,
 		time: time,
 	};
+	console.log(from, to);
 	const histories = await History.bulkCreate([from, to]);
 	// 여기는 통합 계좌 내역에  추가된 것 (고정+자유 총 금액 입금 내역(자식에게 뜨는)) + (총 송금 내역(부모에게 뜨는))
 
@@ -382,6 +383,19 @@ router.post("/:childId", async (req, res, next) => {
 			fixsubhistory,
 			freesubhistory,
 		]);
+	} else {
+		const freehistory = {
+			sub_account_id: free.sub_account_id,
+			bank: CHILD_BANK,
+			transaction_type: "입금",
+			account_holder: temp.to.account_holder,
+			account_number: parentAccount.account_number || "계좌번호",
+			amount: temp.to.amount,
+			date: date,
+			time: time,
+		};
+		const sub = SubAccountHistory.bulkCreate([freehistory]);
+		console.log("생성", sub);
 	}
 	res.json({ code: 200, message: "용돈 송금 완료" });
 
