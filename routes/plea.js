@@ -5,10 +5,10 @@ const { Plea } = require("../models");
 
 /**
  * @swagger
- * /pleas/{id}:
+ * /plea/{id}:
  *   post:
  *     tags:
- *       - Pleas
+ *       - Plea
  *     summary: Create a new plea
  *     description: Creates a new plea with the specified parent ID and amount
  *     parameters:
