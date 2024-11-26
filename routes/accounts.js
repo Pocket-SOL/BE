@@ -39,6 +39,35 @@ const { PARENT_BANK, CHILD_BANK } = require("../util/account_const");
  *                   example: 5800
  */
 
+/**
+ * @swagger
+ * /api/accounts:
+ *   get:
+ *     tags:
+ *       - Accounts
+ *     summary: 유저의 잔액 조회 api
+ *     description: 쿼리 파라미터로 받아온 유저(id=user_id)에 대한 잔액
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: 유저 아이디(pk)
+ *     responses:
+ *       200:
+ *         description: 유저의 잔액
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalAmount:
+ *                   type: number
+ *                   description: 유저의 계좌 잔액
+ *                   example: 5800
+ */
+
 //user의 계좌잔액 불러오기
 router.get("/", (req, res, next) => {
 	const userId = req.query.id;
@@ -73,6 +102,79 @@ router.get("/", (req, res, next) => {
 });
 
 //user의 계좌 이용 내역
+/**
+ * @swagger
+ * /api/accounts/history:
+ *   get:
+ *     tags:
+ *       - Accounts
+ *     summary: 계좌의 거래 내역 조회
+ *     description: 특정 유저(user_id)의 계좌의 거래 내역을 조회합니다.
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: 조회할 유저 ID (=> 해당 유저 계좌의 히스토리내역)
+ *     responses:
+ *       200:
+ *         description: 거래 내역 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   history_id:
+ *                     type: integer
+ *                     description: 거래 내역 ID
+ *                     example: 1
+ *                   date:
+ *                     type: string
+ *                     format: date
+ *                     description: 거래 날짜
+ *                     example: "2024-11-20"
+ *                   time:
+ *                     type: string
+ *                     format: time
+ *                     description: 거래 시간
+ *                     example: "10:00:00"
+ *                   transaction_type:
+ *                     type: string
+ *                     description: 거래 유형 (입금/출금)
+ *                     example: "입금"
+ *                   account_holder:
+ *                     type: string
+ *                     description: 거래 상대자 이름
+ *                     example: "도은"
+ *                   account_number:
+ *                     type: string
+ *                     description: 거래 계좌 번호
+ *                     example: "계좌번호"
+ *                   amount:
+ *                     type: string
+ *                     format: decimal
+ *                     description: 거래 금액
+ *                     example: "1000.00"
+ *                   photo:
+ *                     type: string
+ *                     format: binary
+ *                     nullable: true
+ *                     description: 거래와 관련된 사진 (있을 경우)
+ *                     example: null
+ *                   account_id:
+ *                     type: integer
+ *                     description: 계좌 ID
+ *                     example: 2
+ *                   bank:
+ *                     type: string
+ *                     nullable: true
+ *                     description: 은행 이름 (정보가 없으면 null)
+ *                     example: null
+ */
+
 /**
  * @swagger
  * /api/accounts/history:
@@ -301,6 +403,7 @@ router.post("/:childId", async (req, res, next) => {
 		time: time,
 	};
 	console.log(from, to);
+	console.log(from, to);
 	const histories = await History.bulkCreate([from, to]);
 	// 여기는 통합 계좌 내역에  추가된 것 (고정+자유 총 금액 입금 내역(자식에게 뜨는)) + (총 송금 내역(부모에게 뜨는))
 
@@ -396,6 +499,19 @@ router.post("/:childId", async (req, res, next) => {
 		};
 		const sub = SubAccountHistory.bulkCreate([freehistory]);
 		console.log("생성", sub);
+	} else {
+		const freehistory = {
+			sub_account_id: free.sub_account_id,
+			bank: CHILD_BANK,
+			transaction_type: "입금",
+			account_holder: temp.to.account_holder,
+			account_number: parentAccount.account_number || "계좌번호",
+			amount: temp.to.amount,
+			date: date,
+			time: time,
+		};
+		const sub = SubAccountHistory.bulkCreate([freehistory]);
+		console.log("생성", sub);
 	}
 	res.json({ code: 200, message: "용돈 송금 완료" });
 
@@ -406,6 +522,69 @@ router.post("/:childId", async (req, res, next) => {
 	// const subhis = temp.reservation.map ((e)=>{
 	//   return { ...temp.to, sub_history_id:  }
 	// })
+});
+/**
+ * @swagger
+ * /api/accounts/number:
+ *   get:
+ *     tags:
+ *       - Accounts
+ *     summary: Get Account Number
+ *     description: This endpoint retrieves the account number for a user by their ID.
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The user ID to find the associated account number.
+ *     responses:
+ *       200:
+ *         description: The account number for the user.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 account_number:
+ *                   type: string
+ *                   description: The account number associated with the user.
+ *       400:
+ *         description: Bad Request - If the user ID is not provided.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Error message.
+ *       500:
+ *         description: Internal Server Error - If an error occurs while querying the database.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Error message.
+ */
+router.get("/number", (req, res, next) => {
+	const userId = req.query.id;
+
+	if (!userId) {
+		return res.status(400).json({ message: "User Id is required" });
+	}
+	Account.findOne({ where: { user_id: userId } })
+		.then((account) => {
+			res.json({
+				account_number: account.account_number,
+			});
+		})
+		.catch((err) => {
+			next(err);
+		});
 });
 /**
  * @swagger
