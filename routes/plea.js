@@ -5,7 +5,7 @@ const { Plea } = require("../models");
 
 /**
  * @swagger
- * /plea/{id}:
+ * /api/plea/{id}:
  *   post:
  *     tags:
  *       - Plea
