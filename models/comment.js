@@ -29,6 +29,10 @@ module.exports = function (sequelize, DataTypes) {
 					key: "user_id",
 				},
 			},
+			username: {
+				type: DataTypes.STRING(255),
+				allowNull: false,
+			},
 		},
 		{
 			sequelize,

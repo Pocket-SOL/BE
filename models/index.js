@@ -97,6 +97,13 @@ db.Purchase.sync({ alter: true })
 	.catch((err) => {
 		console.error(err);
 	});
+db.Comment.sync({ alter: true })
+	.then((result) => {
+		console.log(result);
+	})
+	.catch((err) => {
+		console.error(err);
+	});
 
 //db객체 외부로 노출하기
 module.exports = db;

@@ -316,6 +316,53 @@ router.post("/login", async (req, res) => {
  *       - BearerAuth: []
  */
 
+// 로그아웃
+
+/**
+ * @swagger
+ * /api/users/logout:
+ *   post:
+ *     summary: 로그아웃
+ *     description: 클라이언트의 JWT 토큰을 삭제하여 로그아웃합니다.
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: 로그아웃 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Logout successful
+ *       500:
+ *         description: 서버 오류
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: An unexpected error occurred
+ */
+
+// 로그아웃 API
+router.post("/logout", (req, res) => {
+	try {
+		// JWT 토큰 쿠키 삭제
+		res.clearCookie("jwtToken", {
+			httpOnly: true,
+			sameSite: "Strict",
+		});
+
+		res.status(200).json({ message: "Logout successful" });
+	} catch (error) {
+		res.status(500).json({ error: error.message });
+	}
+});
+
 /**
  * @swagger
  * components:
