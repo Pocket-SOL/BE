@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const { Purchase, Purchaseuser } = require("../models");
 const userAuth = require("../middlewares/userAuth");
+const purchaseuser = require("../models/purchaseuser");
+const { where } = require("sequelize");
 /**
  * @swagger
  * /api/purchases:
@@ -237,19 +239,15 @@ router.post("/", userAuth, async (req, res) => {
  *         description: 서버 에러
  */
 router.put("/:id", async (req, res) => {
-	const { title, content, end_date, participants, amount } = req.body;
-	const id = req.params.id;
-	const modified = await Purchase.update(
+	const { status } = req.body;
+	const purchase_id = req.params.id;
+	const modifiedStatus = await Purchase.update(
 		{
-			title: title,
-			content: content,
-			end_date: end_date,
-			participants: participants,
-			amount: amount,
+			status: "end",
 		},
-		{ where: { purchase_id: id } },
+		{ where: { purchase_id: purchase_id } },
 	);
-	res.json({ ok: true, response: modified });
+	res.json({ ok: true, response: modifiedStatus });
 });
 
 /**
@@ -287,9 +285,9 @@ router.put("/:id", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
 	try {
-		const id = req.params.id;
+		const purchase_id = req.params.id;
 		const deleted = await Purchase.destroy({
-			where: { purchase_id: id },
+			where: { purchase_id: purchase_id },
 		});
 
 		if (deleted) {
@@ -297,6 +295,63 @@ router.delete("/:id", async (req, res) => {
 		} else {
 			res.status(404).json({ ok: false, error: "구매를 찾을 수 없습니다." });
 		}
+	} catch (error) {
+		res.status(500).json({ ok: false, error: error.message });
+	}
+});
+
+//purchaseuser 관련
+
+router.post("/user/:id", async (req, res) => {
+	console.log(req.body);
+	console.log(req.params);
+	const { purchase_id } = req.body;
+	const user_id = req.params.id;
+	try {
+		const userRegister = await Purchaseuser.create({
+			user_id,
+			purchase_id,
+		});
+
+		const count = await Purchaseuser.count({
+			where: { purchase_id: purchase_id },
+		});
+		res.json({ ok: true, response: userRegister, count: count });
+	} catch (error) {
+		res.status(500).json({ ok: false, error: error.message });
+	}
+});
+
+router.get("/user/:id", async (req, res) => {
+	const purchase_id = req.params.id;
+	try {
+		const userList = await Purchaseuser.findAll({
+			where: { purchase_id: purchase_id },
+			attributes: ["user_id"],
+		}).then((users) => {
+			return users.map((user) => user.user_id);
+		});
+
+		const count = await Purchaseuser.count({
+			where: { purchase_id: purchase_id },
+		});
+		res.json({ ok: true, count: count, userList: userList });
+	} catch (error) {
+		res.status(500).json({ ok: false, error: error.message });
+	}
+});
+
+router.post("/user/delete/:id", async (req, res) => {
+	const { purchase_id } = req.body;
+	const user_id = req.params.id;
+	try {
+		const user = await Purchaseuser.destroy({
+			where: { purchase_id: purchase_id, user_id: user_id },
+		});
+		const count = await Purchaseuser.count({
+			where: { purchase_id: purchase_id },
+		});
+		res.json({ ok: true, response: user, count: count });
 	} catch (error) {
 		res.status(500).json({ ok: false, error: error.message });
 	}
