@@ -4,6 +4,7 @@ const path = require("path");
 const s3 = require("./bucket"); // S3 클라이언트 불러오기
 
 const upload = multer({
+	limits: { fileSize: 5 * 1024 * 1024 },
 	storage: multerS3({
 		s3: s3,
 		bucket: process.env.AWS_BUCKET_NAME,

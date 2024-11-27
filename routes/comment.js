@@ -153,10 +153,10 @@ router.get("/:id", async (req, res) => {
 router.post("/:id", async (req, res) => {
 	try {
 		const PurchaseId = req.params.id;
-		const { user_id, content } = req.body;
+		const { username, content } = req.body;
 		const comment = await Comment.create({
 			purchase_id: PurchaseId,
-			user_id,
+			username,
 			content,
 		});
 		res.json({ ok: true, response: comment });
