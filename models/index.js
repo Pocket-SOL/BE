@@ -35,6 +35,7 @@ db.ScheduledTransfer = require("./scheduledtransfer")(
 	sequelize,
 	Sequelize.DataTypes,
 );
+db.Plea = require("./plea")(sequelize, Sequelize.DataTypes);
 
 //관계설정
 db.Account.hasMany(db.History, { foreignKey: "account_id" });
@@ -65,7 +66,8 @@ db.User.belongsTo(db.User, {
 db.User.hasMany(db.Mission, { foreignKey: "user_id" });
 db.User.hasMany(db.Purchase, { foreignKey: "user_id" });
 db.User.hasMany(db.Comment, { foreignKey: "user_id" });
-
+db.User.hasMany(db.Plea, { foreignKey: "user_id" });
+db.Plea.belongsTo(db.User, { foreignKey: "user_id" });
 // sequelize
 // 	.sync()
 // 	.then((result) => {
@@ -82,7 +84,7 @@ db.User.hasMany(db.Comment, { foreignKey: "user_id" });
 // 	.catch((err) => {
 // 		console.error(err);
 // 	});
-db.Account.sync({ alter: true })
+db.Plea.sync({ alter: true })
 	.then((result) => {
 		console.log(result);
 	})

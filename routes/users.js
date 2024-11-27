@@ -252,9 +252,11 @@ router.post("/login", async (req, res) => {
 		res.status(200).json({
 			message: "Login successful",
 			user_id: user.user_id,
+			id: user.id,
 			username: user.username,
 			birth: user.birth,
 			phone: user.phone,
+			school_auth: user.school_auth,
 			role: user.role,
 		});
 	} catch (error) {
@@ -393,7 +395,15 @@ router.get("/auth", async (req, res) => {
 		}
 
 		// 사용자 ID 반환
-		res.status(200).json({ id: user.id });
+		res.status(200).json({
+			user_id: user.user_id,
+			id: user.id,
+			username: user.username,
+			birth: user.birth,
+			phone: user.phone,
+			school_auth: user.school_auth,
+			role: user.role,
+		});
 	} catch (error) {
 		if (error.name === "JsonWebTokenError") {
 			return res.status(401).json({ message: "Invalid token" });
