@@ -36,38 +36,130 @@ db.ScheduledTransfer = require("./scheduledtransfer")(
 	Sequelize.DataTypes,
 );
 db.Plea = require("./plea")(sequelize, Sequelize.DataTypes);
-
+db.ActivityLog = require("./activitylog")(sequelize, Sequelize.DataTypes);
 //관계설정
-db.Account.hasMany(db.History, { foreignKey: "account_id" });
-db.Account.hasMany(db.SubAccount, { foreignKey: "account_id" });
-db.Account.belongsTo(db.User, { foreignKey: "user_id" });
-db.Comment.belongsTo(db.Purchase, { foreignKey: "purchase_id" });
-db.Comment.belongsTo(db.User, { foreignKey: "user_id" });
-db.History.belongsTo(db.Account, { foreignKey: "account_id" });
-db.Mission.belongsTo(db.User, { foreignKey: "user_id" });
-db.Purchase.belongsTo(db.User, { foreignKey: "user_id" });
-db.Purchase.hasMany(db.Purchaseuser, { foreignKey: "purchase_id" });
-db.Purchase.hasMany(db.Comment, { foreignKey: "purchase_id" });
-db.Purchaseuser.belongsTo(db.Purchase, { foreignKey: "purchase_id" });
-db.ScheduledTransfer.belongsTo(db.SubAccount, { foreignKey: "sub_account_id" });
-db.SubAccount.belongsTo(db.Account, { foreignKey: "account_id" });
-db.SubAccount.hasMany(db.SubAccountHistory, { foreignKey: "sub_account_id" });
-db.SubAccount.hasMany(db.SubAccountHistory, { foreignKey: "sub_account_id" });
-db.SubAccountHistory.belongsTo(db.SubAccount, { foreignKey: "sub_account_id" });
-db.User.hasOne(db.Account, { foreignKey: "user_id" });
+db.Account.hasMany(db.History, {
+	foreignKey: "account_id",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
+db.Account.hasMany(db.SubAccount, {
+	foreignKey: "account_id",
+	onDelete: "CASCADE", // SubAccount는 SET NULL로 설정
+	onUpdate: "CASCADE",
+});
+db.Account.belongsTo(db.User, {
+	foreignKey: "user_id",
+	onDelete: "CASCADE", // Account의 user_id는 SET NULL로 설정
+	onUpdate: "CASCADE",
+});
+db.Comment.belongsTo(db.Purchase, {
+	foreignKey: "purchase_id",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
+db.Comment.belongsTo(db.User, {
+	foreignKey: "user_id",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
+db.History.belongsTo(db.Account, {
+	foreignKey: "account_id",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
+db.Mission.belongsTo(db.User, {
+	foreignKey: "user_id",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
+db.Purchase.belongsTo(db.User, {
+	foreignKey: "user_id",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
+db.Purchase.hasMany(db.Purchaseuser, {
+	foreignKey: "purchase_id",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
+db.Purchase.hasMany(db.Comment, {
+	foreignKey: "purchase_id",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
+db.Purchaseuser.belongsTo(db.Purchase, {
+	foreignKey: "purchase_id",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
+db.ScheduledTransfer.belongsTo(db.SubAccount, {
+	foreignKey: "sub_account_id",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
+db.SubAccount.belongsTo(db.Account, {
+	foreignKey: "account_id",
+	onDelete: "CASCADE", // SubAccount의 account_id는 SET NULL로 설정
+	onUpdate: "CASCADE",
+});
+db.SubAccount.hasMany(db.SubAccountHistory, {
+	foreignKey: "sub_account_id",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
+db.SubAccountHistory.belongsTo(db.SubAccount, {
+	foreignKey: "sub_account_id",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
+db.User.hasOne(db.Account, {
+	foreignKey: "user_id",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
 db.User.hasMany(db.User, {
 	foreignKey: "parent_id",
 	as: "children", // 자식을 참조
+	onDelete: "SET NULL",
+	onUpdate: "CASCADE",
 });
 db.User.belongsTo(db.User, {
 	foreignKey: "parent_id",
 	as: "parent", // 부모를 참조
+	onDelete: "SET NULL",
+	onUpdate: "CASCADE",
 });
-db.User.hasMany(db.Mission, { foreignKey: "user_id" });
-db.User.hasMany(db.Purchase, { foreignKey: "user_id" });
-db.User.hasMany(db.Comment, { foreignKey: "user_id" });
-db.User.hasMany(db.Plea, { foreignKey: "user_id" });
-db.Plea.belongsTo(db.User, { foreignKey: "user_id" });
+db.User.hasMany(db.Mission, {
+	foreignKey: "user_id",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
+db.User.hasMany(db.Purchase, {
+	foreignKey: "user_id",
+	onDelete: "SET NULL",
+	onUpdate: "CASCADE",
+});
+db.User.hasMany(db.Comment, {
+	foreignKey: "user_id",
+	onDelete: "SET NULL",
+	onUpdate: "CASCADE",
+});
+db.User.hasMany(db.Plea, {
+	foreignKey: "user_id",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
+db.Plea.belongsTo(db.User, {
+	foreignKey: "user_id",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
+db.ActivityLog.belongsTo(db.User, {
+	foreignKey: "user_id",
+	onDelete: "CASCADE", // 부모 삭제 시 자식 데이터도 삭제
+	onUpdate: "CASCADE",
+});
 // sequelize
 // 	.sync()
 // 	.then((result) => {
@@ -84,28 +176,21 @@ db.Plea.belongsTo(db.User, { foreignKey: "user_id" });
 // 	.catch((err) => {
 // 		console.error(err);
 // 	});
-db.Plea.sync({ alter: true })
-	.then((result) => {
-		console.log(result);
-	})
-	.catch((error) => {
-		console.log(error);
-	});
+// db.Plea.sync({ alter: true })
+// 	.then((result) => {
+// 		console.log(result);
+// 	})
+// 	.catch((error) => {
+// 		console.log(error);
+// 	});
 
-db.Purchase.sync({ alter: true })
-	.then((result) => {
-		console.log(result);
-	})
-	.catch((err) => {
-		console.error(err);
-	});
-db.Comment.sync({ alter: true })
-	.then((result) => {
-		console.log(result);
-	})
-	.catch((err) => {
-		console.error(err);
-	});
+// db.Purchase.sync({ alter: true })
+// 	.then((result) => {
+// 		console.log(result);
+// 	})
+// 	.catch((err) => {
+// 		console.error(err);
+// 	});
 
 //db객체 외부로 노출하기
 module.exports = db;
