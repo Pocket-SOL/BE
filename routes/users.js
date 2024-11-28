@@ -5,8 +5,7 @@ const jwt = require("jsonwebtoken");
 
 const router = express.Router();
 const { User } = require("../models");
-const { where } = require("sequelize");
-const { format } = require("morgan");
+const { Op } = require("sequelize");
 
 /**
  * @swagger
@@ -513,100 +512,84 @@ router.get("/my-children", async (req, res) => {
 
 /**
  * @swagger
- * /api/users/me:
+ * /api/users/search:
  *   get:
- *     summary: Get current user information
- *     description: Retrieve the information of the currently authenticated user based on the JWT token stored in cookies.
+ *     summary: Search users by username or phone number
+ *     description: Searches for users whose username or phone contains the provided query string.
  *     tags:
  *       - Users
+ *     parameters:
+ *       - in: query
+ *         name: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The search query to match against username or phone.
  *     responses:
  *       200:
- *         description: Successfully retrieved user information
+ *         description: A list of users matching the search query.
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 username:
- *                   type: string
- *                   example: johndoe
- *                 birth:
- *                   type: string
- *                   format: date
- *                   example: 1990-01-01
- *                 phone:
- *                   type: string
- *                   example: "010-1234-5678"
- *                 role:
- *                   type: string
- *                   example: admin
- *       401:
- *         description: Unauthorized
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Unauthorized: No token provided"
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     description: The user ID.
+ *                   name:
+ *                     type: string
+ *                     description: The username of the user.
+ *                   phone:
+ *                     type: string
+ *                     description: The phone number of the user.
+ *       400:
+ *         description: Search query is required.
  *       404:
- *         description: User not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "User not found"
+ *         description: No users found with the provided conditions.
  *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "An unexpected error occurred"
+ *         description: Internal server error.
  */
-router.get("/me", async (req, res) => {
+// user 검색
+router.get("/search", async (req, res) => {
 	try {
-		// 쿠키에서 JWT 토큰 가져오기
-		const token = req.cookies.jwtToken;
-		if (!token) {
-			return res
-				.status(401)
-				.json({ message: "Unauthorized: No token provided" });
+		const { query } = req.query;
+
+		if (!query) {
+			return res.status(400).json({ error: "Search query is required" });
 		}
 
-		// 토큰 검증
-		const decoded = jwt.verify(token, process.env.JWT_SECRET || "MyJWT");
+		const whereCondition = {
+			[Op.and]: [
+				{
+					[Op.or]: [
+						{ username: { [Op.like]: `%${query}%` } }, // 이름 포함 검색
+						{ phone: { [Op.like]: `%${query}%` } }, // 휴대폰 번호 포함 검색
+					],
+				},
+				{
+					role: "child", // role이 "children"인 경우만 조회
+				},
+			],
+		};
 
-		// 사용자 조회
-		const user = await User.findOne({ where: { id: decoded.id } });
-		console.log(user);
-		if (!user) {
-			return res.status(404).json({ message: "User not found" });
-		}
-
-		// 사용자 정보 반환 (username, birth, phone, role)
-		res.status(200).json({
-			user_id: user.user_id,
-			username: user.username,
-			birth: user.birth,
-			phone: user.phone,
-			role: user.role,
+		// 검색 조건에 맞는 사용자 조회
+		const users = await User.findAll({
+			where: whereCondition,
+			attributes: ["id", "username", "phone"],
 		});
+
+		const userDetails = users.map((user) => ({
+			id: user.id,
+			name: user.username,
+			phone: user.phone,
+		}));
+
+		res.json(userDetails);
 	} catch (error) {
-		if (error.name === "JsonWebTokenError") {
-			return res.status(401).json({ message: "Invalid token" });
-		}
-		if (error.name === "TokenExpiredError") {
-			return res.status(401).json({ message: "Token expired" });
-		}
-		res.status(500).json({ error: error.message });
+		console.error("Error fetching children:", error);
+		res.status(500).json({ error: "Intrnal Server Error" });
 	}
 });
 

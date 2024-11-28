@@ -161,6 +161,7 @@ db.ActivityLog.belongsTo(db.User, {
 	onDelete: "CASCADE", // 부모 삭제 시 자식 데이터도 삭제
 	onUpdate: "CASCADE",
 });
+
 db.ChildRegNoti.belongsTo(db.User, {
 	foreignKey: "sender_id",
 	onDelete: "CASCADE",
@@ -204,13 +205,13 @@ db.ChildRegNoti.belongsTo(db.User, {
 // 		console.error(err);
 // 	});
 
-// db.ChildRegNoti.sync({ alter: true })
-// 	.then((result) => {
-// 		console.log(result);
-// 	})
-// 	.catch((err) => {
-// 		console.error(err);
-// 	});
+db.ChildRegNoti.sync({ alter: true })
+	.then((result) => {
+		console.log(result);
+	})
+	.catch((err) => {
+		console.error(err);
+	});
 
 //db객체 외부로 노출하기
 module.exports = db;
