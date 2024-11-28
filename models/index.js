@@ -160,14 +160,6 @@ db.ActivityLog.belongsTo(db.User, {
 	onDelete: "CASCADE", // 부모 삭제 시 자식 데이터도 삭제
 	onUpdate: "CASCADE",
 });
-sequelize
-    .sync({ force: true })
-    .then((result) => {
-        console.log(result);
-    })
-    .catch((err) => {
-        console.error(err);
-    });
 
 //db객체 외부로 노출하기
 module.exports = db;
