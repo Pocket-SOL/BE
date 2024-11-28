@@ -258,6 +258,7 @@ router.post("/login", async (req, res) => {
 			phone: user.phone,
 			school_auth: user.school_auth,
 			role: user.role,
+			school: user.school,
 		});
 	} catch (error) {
 		res.status(500).json({ error: error.message });
@@ -403,6 +404,7 @@ router.get("/auth", async (req, res) => {
 			phone: user.phone,
 			school_auth: user.school_auth,
 			role: user.role,
+			school: user.school,
 		});
 	} catch (error) {
 		if (error.name === "JsonWebTokenError") {
@@ -610,4 +612,19 @@ router.get("/me", async (req, res) => {
 	}
 });
 
+router.put("/:id", async (req, res) => {
+	const user_id = req.params.id;
+	const { schoolName } = req.body;
+	try {
+		const updateSchool = await User.update(
+			{
+				school: schoolName,
+			},
+			{ where: { user_id: user_id } },
+		);
+		res.json({ ok: true, response: updateSchool });
+	} catch (error) {
+		console.error(error);
+	}
+});
 module.exports = router;
