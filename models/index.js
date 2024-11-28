@@ -20,6 +20,7 @@ db.sequelize = sequelize; //DB연결정보를 포함한 DB제어 객체속성(CR
 db.Sequelize = Sequelize; //Sequelize팩키지에서 제공하는 각종 데이터 타입 및 관련 객체정보를 제공함
 
 db.User = require("./user")(sequelize, Sequelize.DataTypes); // user 모델 불러오기
+db.ChildRegNoti = require("./childregnoti")(sequelize, Sequelize.DataTypes);
 db.Account = require("./account")(sequelize, Sequelize.DataTypes);
 db.History = require("./history")(sequelize, Sequelize.DataTypes);
 db.Purchase = require("./purchase")(sequelize, Sequelize.DataTypes);
@@ -160,6 +161,17 @@ db.ActivityLog.belongsTo(db.User, {
 	onDelete: "CASCADE", // 부모 삭제 시 자식 데이터도 삭제
 	onUpdate: "CASCADE",
 });
+db.ChildRegNoti.belongsTo(db.User, {
+	foreignKey: "sender_id",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
+db.ChildRegNoti.belongsTo(db.User, {
+	foreignKey: "receiver_id",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
+
 // sequelize
 // 	.sync()
 // 	.then((result) => {
@@ -185,6 +197,14 @@ db.ActivityLog.belongsTo(db.User, {
 // 	});
 
 // db.Purchase.sync({ alter: true })
+// 	.then((result) => {
+// 		console.log(result);
+// 	})
+// 	.catch((err) => {
+// 		console.error(err);
+// 	});
+
+// db.ChildRegNoti.sync({ alter: true })
 // 	.then((result) => {
 // 		console.log(result);
 // 	})
