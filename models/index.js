@@ -161,7 +161,7 @@ db.ActivityLog.belongsTo(db.User, {
 	onUpdate: "CASCADE",
 });
 sequelize
-    .sync({ force: true })
+    .sync({ force: true ,logging:console.log})
     .then((result) => {
         console.log(result);
     })
