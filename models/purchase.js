@@ -53,6 +53,14 @@ module.exports = function (sequelize, DataTypes) {
 				type: DataTypes.BIGINT,
 				allowNull: false,
 			},
+			count: {
+				type: DataTypes.BIGINT,
+				allowNull: false,
+			},
+			school: {
+				type: DataTypes.STRING(255),
+				allowNull: true,
+			},
 		},
 		{
 			sequelize,

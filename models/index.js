@@ -182,13 +182,13 @@ db.ChildRegNoti.belongsTo(db.User, {
 // 		console.error(err);
 // 	});
 
-// db.User.sync({ alter: true })
-// 	.then((result) => {
-// 		console.log(result);
-// 	})
-// 	.catch((err) => {
-// 		console.error(err);
-// 	});
+db.User.sync({ alter: true })
+	.then((result) => {
+		console.log(result);
+	})
+	.catch((err) => {
+		console.error(err);
+	});
 // db.Plea.sync({ alter: true })
 // 	.then((result) => {
 // 		console.log(result);
@@ -197,13 +197,13 @@ db.ChildRegNoti.belongsTo(db.User, {
 // 		console.log(error);
 // 	});
 
-// db.Purchase.sync({ alter: true })
-// 	.then((result) => {
-// 		console.log(result);
-// 	})
-// 	.catch((err) => {
-// 		console.error(err);
-// 	});
+db.Purchase.sync({ alter: true })
+	.then((result) => {
+		console.log(result);
+	})
+	.catch((err) => {
+		console.error(err);
+	});
 
 db.ChildRegNoti.sync({ alter: true })
 	.then((result) => {
