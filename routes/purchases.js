@@ -4,6 +4,7 @@ const { Purchase, Purchaseuser } = require("../models");
 const userAuth = require("../middlewares/userAuth");
 const purchaseuser = require("../models/purchaseuser");
 const { where } = require("sequelize");
+const purchase = require("../models/purchase");
 /**
  * @swagger
  * /api/purchases:
@@ -46,6 +47,7 @@ const { where } = require("sequelize");
 router.get("/", async (req, res) => {
 	try {
 		const purchaseList = await Purchase.findAll();
+
 		res.json(purchaseList);
 	} catch (error) {
 		res.status(500).json({ error: error.message });
@@ -163,6 +165,7 @@ router.post("/", userAuth, async (req, res) => {
 	try {
 		const { title, content, end_date, participants, amount } = req.body;
 		console.log(req.body);
+		console.log(req.user_id);
 		const userId = req.user_id; // 미들웨어에서 설정한 사용자 ID 사용
 		const userName = req.user_username;
 		console.log("purchase", userId, userName);
@@ -175,6 +178,7 @@ router.post("/", userAuth, async (req, res) => {
 			username: userName,
 			participants,
 			amount,
+			count: 0,
 		});
 		res.json({ ok: true, response: purchaseRegister });
 	} catch (error) {
@@ -316,6 +320,8 @@ router.post("/user/:id", async (req, res) => {
 		const count = await Purchaseuser.count({
 			where: { purchase_id: purchase_id },
 		});
+
+		await Purchase.update({ count }, { where: { purchase_id: purchase_id } });
 		res.json({ ok: true, response: userRegister, count: count });
 	} catch (error) {
 		res.status(500).json({ ok: false, error: error.message });
@@ -335,6 +341,7 @@ router.get("/user/:id", async (req, res) => {
 		const count = await Purchaseuser.count({
 			where: { purchase_id: purchase_id },
 		});
+
 		res.json({ ok: true, count: count, userList: userList });
 	} catch (error) {
 		res.status(500).json({ ok: false, error: error.message });
