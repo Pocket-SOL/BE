@@ -46,6 +46,14 @@ module.exports = function (sequelize, DataTypes) {
 				type: DataTypes.BIGINT,
 				allowNull: true,
 			},
+			school: {
+				type: DataTypes.STRING(255),
+				allowNull: true,
+			},
+			open_token: {
+				type: DataTypes.TEXT,
+				allowNull: true,
+			},
 		},
 		{
 			sequelize,

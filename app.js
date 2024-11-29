@@ -15,7 +15,11 @@ const purchasesRouter = require("./routes/purchases");
 const commentRouter = require("./routes/comment");
 const historyRouter = require("./routes/histories");
 const pleaRouter = require("./routes/plea");
+
 const quizRouter = require("./routes/quiz");
+
+const schoolsRouter = require("./routes/schools");
+
 //swagger 추가
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpecs = require("./config/swagger");
@@ -51,6 +55,8 @@ app.use("/api/comments", commentRouter);
 app.use("/api/accounts", accountsRouter);
 app.use("/api/subaccounts", subaccountRouter);
 app.use("/api/histories", historyRouter);
+app.use("/api/schools", schoolsRouter);
+
 app.use("/api/plea", pleaRouter);
 app.use("/api/quiz", quizRouter);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpecs));

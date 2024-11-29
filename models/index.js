@@ -184,6 +184,7 @@ db.ChildRegNoti.belongsTo(db.User, {
 // 		console.error(err);
 // 	});
 
+
 // db.User.sync({ alter: true })
 // 	.then((result) => {
 // 		console.log(result);
@@ -214,6 +215,15 @@ db.ChildRegNoti.belongsTo(db.User, {
 // 	.catch((err) => {
 // 		console.error(err);
 // 	});
+
+db.User.sync({ alter: true })
+	.then((result) => {
+		console.log(result);
+	})
+	.catch((err) => {
+		console.error(err);
+	});
+
 
 // db.Quiz.sync({ alter: true })
 // 	.then((result) => {
