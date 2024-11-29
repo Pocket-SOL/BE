@@ -54,6 +54,10 @@ module.exports = function (sequelize, DataTypes) {
 				type: DataTypes.TEXT,
 				allowNull: true,
 			},
+			user_seq_no: {
+				type: DataTypes.BIGINT,
+				allowNull: true,
+			},
 		},
 		{
 			sequelize,

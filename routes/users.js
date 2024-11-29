@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const router = express.Router();
 const { User } = require("../models");
 const { Op } = require("sequelize");
+const user = require("../models/user");
 
 /**
  * @swagger
@@ -120,10 +121,18 @@ router.post("/signup", async (req, res) => {
 			phone,
 			role,
 		});
-		console.log(newUser);
+		console.log("new User", newUser);
 
 		res.status(201).json({
 			message: "User registered successfully",
+			data: {
+				user_id: newUser.user_id,
+				id: newUser.id,
+				username: newUser.username,
+				birth: newUser.birth,
+				phone: newUser.phone,
+				role: newUser.role,
+			},
 		});
 	} catch (error) {
 		res.status(500).json({ error: error.message });
@@ -597,22 +606,23 @@ router.get("/search", async (req, res) => {
 
 router.put("/token", async (req, res) => {
 	console.log("body", req.body);
-	const { userId, token } = req.body;
-	console.log(userId, token);
+	const { userId, token, user_seq_no } = req.body;
+	console.log(userId, token, user_seq_no);
 
 	try {
-		console.log(userId, token);
+		console.log(userId, token, user_seq_no);
 		const user = await User.findOne({ where: { user_id: userId } });
 		console.log(user);
 		if (!user) {
 			return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
 		}
 		user.open_token = token;
+		user.user_seq_no = user_seq_no;
 		await user.save();
 
 		res.status(200).json({
-			message: "Open API 토큰이 성공적으로 업데이트되었습니다.",
-			data: { open_api_token: user.open_token },
+			message: "Open API 토큰/유저가 성공적으로 업데이트되었습니다.",
+			data: { open_api_token: user.open_token, user_seq_no: user.user_seq_no },
 		});
 	} catch (error) {
 		console.error(error);
