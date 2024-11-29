@@ -38,6 +38,12 @@ module.exports = function (sequelize, DataTypes) {
 				type: DataTypes.STRING(50),
 				allowNull: false,
 			},
+			is_read: {
+				// 읽음 여부 ('true' = 읽음, 'false' = 읽지 않음)
+				type: DataTypes.BOOLEAN,
+				defaultValue: false, // 기본값은 '읽지 않음'
+				allowNull: false,
+			},
 			created_at: {
 				type: DataTypes.DATE,
 				defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
