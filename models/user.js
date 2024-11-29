@@ -50,6 +50,14 @@ module.exports = function (sequelize, DataTypes) {
 				type: DataTypes.STRING(255),
 				allowNull: true,
 			},
+			open_token: {
+				type: DataTypes.TEXT,
+				allowNull: true,
+			},
+			user_seq_no: {
+				type: DataTypes.BIGINT,
+				allowNull: true,
+			},
 		},
 		{
 			sequelize,
