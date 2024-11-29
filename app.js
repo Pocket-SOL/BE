@@ -15,7 +15,11 @@ const purchasesRouter = require("./routes/purchases");
 const commentRouter = require("./routes/comment");
 const historyRouter = require("./routes/histories");
 const pleaRouter = require("./routes/plea");
+
+const quizRouter = require("./routes/quiz");
+
 const schoolsRouter = require("./routes/schools");
+
 //swagger 추가
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpecs = require("./config/swagger");
@@ -54,6 +58,7 @@ app.use("/api/histories", historyRouter);
 app.use("/api/schools", schoolsRouter);
 
 app.use("/api/plea", pleaRouter);
+app.use("/api/quiz", quizRouter);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 // catch 404 and forward to error handler
