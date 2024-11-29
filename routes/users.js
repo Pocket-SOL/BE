@@ -595,6 +595,31 @@ router.get("/search", async (req, res) => {
 	}
 });
 
+router.put("/token", async (req, res) => {
+	console.log("body", req.body);
+	const { userId, token } = req.body;
+	console.log(userId, token);
+
+	try {
+		console.log(userId, token);
+		const user = await User.findOne({ where: { user_id: userId } });
+		console.log(user);
+		if (!user) {
+			return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+		}
+		user.open_token = token;
+		await user.save();
+
+		res.status(200).json({
+			message: "Open API 토큰이 성공적으로 업데이트되었습니다.",
+			data: { open_api_token: user.open_token },
+		});
+	} catch (error) {
+		console.error(error);
+		res.status(500).json({ message: "서버 오류, 다시 시도해주세요." });
+	}
+});
+
 router.put("/:id", async (req, res) => {
 	const user_id = req.params.id;
 	const { schoolName } = req.body;
@@ -610,4 +635,5 @@ router.put("/:id", async (req, res) => {
 		console.error(error);
 	}
 });
+
 module.exports = router;
