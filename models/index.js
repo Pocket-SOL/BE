@@ -182,13 +182,13 @@ db.ChildRegNoti.belongsTo(db.User, {
 // 		console.error(err);
 // 	});
 
-db.User.sync({ alter: true })
-	.then((result) => {
-		console.log(result);
-	})
-	.catch((err) => {
-		console.error(err);
-	});
+// db.User.sync({ alter: true })
+// 	.then((result) => {
+// 		console.log(result);
+// 	})
+// 	.catch((err) => {
+// 		console.error(err);
+// 	});
 // db.Plea.sync({ alter: true })
 // 	.then((result) => {
 // 		console.log(result);
@@ -205,13 +205,13 @@ db.Purchase.sync({ alter: true })
 		console.error(err);
 	});
 
-db.ChildRegNoti.sync({ alter: true })
-	.then((result) => {
-		console.log(result);
-	})
-	.catch((err) => {
-		console.error(err);
-	});
+// db.ChildRegNoti.sync({ alter: true })
+// 	.then((result) => {
+// 		console.log(result);
+// 	})
+// 	.catch((err) => {
+// 		console.error(err);
+// 	});
 
 //db객체 외부로 노출하기
 module.exports = db;
