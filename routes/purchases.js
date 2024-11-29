@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { Purchase, Purchaseuser } = require("../models");
 const userAuth = require("../middlewares/userAuth");
+const upload = require("../config/multer");
 
 /**
  * @swagger
@@ -396,4 +397,74 @@ router.post("/user/delete/:id", async (req, res) => {
 	}
 });
 
+// 사진 업로드
+router.post("/img/", upload.single("image"), (req, res, next) => {
+	try {
+		const images = req.file;
+		//s3 키 , url
+		const imageKey = images.key;
+		const imageUrl = images.location;
+
+		//response
+		res.status(200).json({
+			success: true,
+			message: "File uplaod successfully",
+			data: {
+				imageUrl,
+				imageKey,
+			},
+		});
+	} catch (error) {
+		console.error("File uplaod error", error);
+		res.status(500).json({
+			success: false,
+			message: "Failed to uplaod file",
+			error: error.message,
+		});
+	}
+});
+
+//사진 업데이트
+router.put("/img/:id", async (req, res) => {
+	console.log(req.params);
+	try {
+		const purchase_id = req.params.id;
+		const { imgUrl } = req.body;
+		const purchase = await Purchase.findOne({
+			where: { purchase_id: purchase_id },
+		});
+
+		// 데이터가 없으면 404 반환
+		if (!purchase) {
+			return res.status(404).json({ message: "Record not found" });
+		}
+
+		// 기존 값과 imgUrl 값이 다를 경우에만 업데이트 진행
+		if (purchase.image !== imgUrl) {
+			const [affectedCount] = await Purchase.update(
+				{ image: imgUrl }, // 업데이트할 값
+				{ where: { purchase_id: purchase_id } }, // 조건
+			);
+
+			console.log("Affected rows:", affectedCount); // 확인
+
+			if (affectedCount === 0) {
+				console.error("No rows updated");
+				return res.status(404).json({ message: "No record found to update" });
+			} else {
+				console.log("Photo URL updated successfully");
+				return res
+					.status(200)
+					.json({ message: "Photo URL updated successfully" });
+			}
+		} else {
+			console.log("The photo URL is the same, no update required.");
+			return res
+				.status(200)
+				.json({ message: "Photo URL is already up to date." });
+		}
+	} catch (error) {
+		console.error("Error updating photo URL:", error);
+	}
+});
 module.exports = router;
