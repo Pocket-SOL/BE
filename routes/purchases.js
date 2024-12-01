@@ -2,8 +2,8 @@ const express = require("express");
 const router = express.Router();
 const { Purchase, Purchaseuser } = require("../models");
 const userAuth = require("../middlewares/userAuth");
-const purchaseuser = require("../models/purchaseuser");
-const { where } = require("sequelize");
+const upload = require("../config/multer");
+
 /**
  * @swagger
  * /api/purchases:
@@ -46,6 +46,7 @@ const { where } = require("sequelize");
 router.get("/", async (req, res) => {
 	try {
 		const purchaseList = await Purchase.findAll();
+
 		res.json(purchaseList);
 	} catch (error) {
 		res.status(500).json({ error: error.message });
@@ -161,8 +162,9 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", userAuth, async (req, res) => {
 	try {
-		const { title, content, end_date, participants, amount } = req.body;
+		const { title, content, end_date, participants, amount, school } = req.body;
 		console.log(req.body);
+		console.log(req.user_id);
 		const userId = req.user_id; // 미들웨어에서 설정한 사용자 ID 사용
 		const userName = req.user_username;
 		console.log("purchase", userId, userName);
@@ -175,6 +177,8 @@ router.post("/", userAuth, async (req, res) => {
 			username: userName,
 			participants,
 			amount,
+			count: 0,
+			school: school,
 		});
 		res.json({ ok: true, response: purchaseRegister });
 	} catch (error) {
@@ -286,15 +290,32 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
 	try {
 		const purchase_id = req.params.id;
-		const deleted = await Purchase.destroy({
-			where: { purchase_id: purchase_id },
-		});
+		const { user_id } = req.body; // 요청에서 user_id 가져옴
 
-		if (deleted) {
-			res.json({ ok: true, response: deleted });
-		} else {
-			res.status(404).json({ ok: false, error: "구매를 찾을 수 없습니다." });
+		// 삭제하려는 글의 작성자 확인
+		const purchase = await Purchase.findOne({ where: { purchase_id } });
+
+		if (!purchase) {
+			return res
+				.status(404)
+				.json({ ok: false, error: "구매를 찾을 수 없습니다." });
 		}
+
+		// 작성자와 요청한 사용자가 일치하지 않으면 권한 없음
+		if (purchase.user_id !== user_id) {
+			return res.status(403).json({
+				ok: false,
+				error: "삭제 권한이 없습니다.",
+			});
+		}
+
+		// 삭제 수행
+		await Purchase.destroy({ where: { purchase_id } });
+
+		res.json({
+			ok: true,
+			response: `Purchase ${purchase_id} has been deleted.`,
+		});
 	} catch (error) {
 		res.status(500).json({ ok: false, error: error.message });
 	}
@@ -316,7 +337,24 @@ router.post("/user/:id", async (req, res) => {
 		const count = await Purchaseuser.count({
 			where: { purchase_id: purchase_id },
 		});
+
+		await Purchase.update({ count }, { where: { purchase_id: purchase_id } });
 		res.json({ ok: true, response: userRegister, count: count });
+	} catch (error) {
+		res.status(500).json({ ok: false, error: error.message });
+	}
+});
+
+router.get("/participant/:id", async (req, res) => {
+	const user_id = req.params.id;
+	try {
+		const partarr = await Purchaseuser.findAll({
+			where: { user_id: user_id },
+			attributes: ["purchase_id"],
+		});
+
+		const purchaseIds = partarr.map((el) => el.purchase_id);
+		res.json({ ok: true, purchaseIds });
 	} catch (error) {
 		res.status(500).json({ ok: false, error: error.message });
 	}
@@ -335,6 +373,7 @@ router.get("/user/:id", async (req, res) => {
 		const count = await Purchaseuser.count({
 			where: { purchase_id: purchase_id },
 		});
+
 		res.json({ ok: true, count: count, userList: userList });
 	} catch (error) {
 		res.status(500).json({ ok: false, error: error.message });
@@ -351,10 +390,81 @@ router.post("/user/delete/:id", async (req, res) => {
 		const count = await Purchaseuser.count({
 			where: { purchase_id: purchase_id },
 		});
+		await Purchase.update({ count }, { where: { purchase_id: purchase_id } });
 		res.json({ ok: true, response: user, count: count });
 	} catch (error) {
 		res.status(500).json({ ok: false, error: error.message });
 	}
 });
 
+// 사진 업로드
+router.post("/img/", upload.single("image"), (req, res, next) => {
+	try {
+		const images = req.file;
+		//s3 키 , url
+		const imageKey = images.key;
+		const imageUrl = images.location;
+
+		//response
+		res.status(200).json({
+			success: true,
+			message: "File uplaod successfully",
+			data: {
+				imageUrl,
+				imageKey,
+			},
+		});
+	} catch (error) {
+		console.error("File uplaod error", error);
+		res.status(500).json({
+			success: false,
+			message: "Failed to uplaod file",
+			error: error.message,
+		});
+	}
+});
+
+//사진 업데이트
+router.put("/img/:id", async (req, res) => {
+	console.log(req.params);
+	try {
+		const purchase_id = req.params.id;
+		const { imgUrl } = req.body;
+		const purchase = await Purchase.findOne({
+			where: { purchase_id: purchase_id },
+		});
+
+		// 데이터가 없으면 404 반환
+		if (!purchase) {
+			return res.status(404).json({ message: "Record not found" });
+		}
+
+		// 기존 값과 imgUrl 값이 다를 경우에만 업데이트 진행
+		if (purchase.image !== imgUrl) {
+			const [affectedCount] = await Purchase.update(
+				{ image: imgUrl }, // 업데이트할 값
+				{ where: { purchase_id: purchase_id } }, // 조건
+			);
+
+			console.log("Affected rows:", affectedCount); // 확인
+
+			if (affectedCount === 0) {
+				console.error("No rows updated");
+				return res.status(404).json({ message: "No record found to update" });
+			} else {
+				console.log("Photo URL updated successfully");
+				return res
+					.status(200)
+					.json({ message: "Photo URL updated successfully" });
+			}
+		} else {
+			console.log("The photo URL is the same, no update required.");
+			return res
+				.status(200)
+				.json({ message: "Photo URL is already up to date." });
+		}
+	} catch (error) {
+		console.error("Error updating photo URL:", error);
+	}
+});
 module.exports = router;
