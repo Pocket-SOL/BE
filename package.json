@@ -25,6 +25,7 @@
     "prettier": "^3.3.3",
     "sequelize": "^6.37.5",
     "sequelize-auto": "^0.8.8",
+    "socket.io": "^4.8.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "validator": "^13.12.0"
