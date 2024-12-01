@@ -413,6 +413,8 @@ router.get("/auth", async (req, res) => {
 			school_auth: user.school_auth,
 			role: user.role,
 			school: user.school,
+			open_token: user.open_token,
+			user_seq_no: user.user_seq_no,
 		});
 	} catch (error) {
 		if (error.name === "JsonWebTokenError") {

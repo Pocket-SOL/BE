@@ -182,7 +182,7 @@ db.ChildRegNoti.belongsTo(db.User, {
 // 		console.error(err);
 // 	});
 
-db.User.sync({ alter: true })
+db.Account.sync({ alter: true })
 	.then((result) => {
 		console.log(result);
 	})

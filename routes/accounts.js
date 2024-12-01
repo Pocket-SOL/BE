@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const {
 	Account,
+	User,
 	History,
 	SubAccount,
 	SubAccountHistory,
@@ -38,7 +39,43 @@ const { PARENT_BANK, CHILD_BANK } = require("../util/account_const");
  *                   description: 유저의 계좌 잔액
  *                   example: 5800
  */
+//계좌&세부계좌 생성
+router.post("/", async (req, res, next) => {
+	const userId = req.body.id;
+	const num = req.body.num;
+	console.log(userId, num);
 
+	try {
+		const user = User.findByPk(userId);
+
+		if (!user) {
+			return res.status(400).json({
+				success: false,
+				message: `User with ID ${userId} does not exist.`,
+			});
+		}
+		const account = await Account.create({
+			user_id: userId,
+			account_num: num,
+		});
+		// console.log(account);
+		const sub = await SubAccount.bulkCreate([
+			{ account_id: account.account_id, sub_account_usage: "고정" },
+			{ account_id: account.account_id, sub_account_usage: "자유" },
+			{ account_id: account.account_id, sub_account_usage: "잉여" },
+		]);
+		// console.log(sub);
+		res.status(201).json({
+			success: true,
+			message: "Account & SubAccount created successfully",
+			account,
+			sub,
+		});
+	} catch (error) {
+		console.error(error);
+		next(error);
+	}
+});
 /**
  * @swagger
  * /api/accounts:
