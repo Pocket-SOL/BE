@@ -175,23 +175,22 @@ db.ChildRegNoti.belongsTo(db.User, {
 	onUpdate: "CASCADE",
 });
 
-// sequelize
-// 	.sync()
-// 	.then((result) => {
-// 		console.log(result);
-// 	})
-// 	.catch((err) => {
-// 		console.error(err);
-// 	});
-
-
-db.User.sync({ alter: true })
+sequelize
+	.sync({ alter: true })
 	.then((result) => {
 		console.log(result);
 	})
 	.catch((err) => {
 		console.error(err);
 	});
+
+// db.User.sync({ alter: true })
+// 	.then((result) => {
+// 		console.log(result);
+// 	})
+// 	.catch((err) => {
+// 		console.error(err);
+// 	});
 
 //db객체 외부로 노출하기
 module.exports = db;
