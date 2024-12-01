@@ -38,6 +38,8 @@ db.ScheduledTransfer = require("./scheduledtransfer")(
 );
 db.Plea = require("./plea")(sequelize, Sequelize.DataTypes);
 db.ActivityLog = require("./activitylog")(sequelize, Sequelize.DataTypes);
+db.Quiz = require("./quiz")(sequelize, Sequelize.DataTypes);
+
 //관계설정
 db.Account.hasMany(db.History, {
 	foreignKey: "account_id",
@@ -182,7 +184,8 @@ db.ChildRegNoti.belongsTo(db.User, {
 // 		console.error(err);
 // 	});
 
-db.Account.sync({ alter: true })
+
+db.User.sync({ alter: true })
 	.then((result) => {
 		console.log(result);
 	})
