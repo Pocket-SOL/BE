@@ -16,6 +16,10 @@ const commentRouter = require("./routes/comment");
 const historyRouter = require("./routes/histories");
 const pleaRouter = require("./routes/plea");
 
+const childregnotisRouter = require("./routes/childregnotis");
+const notificationRouter = require("./routes/notifications");
+
+
 const quizRouter = require("./routes/quiz");
 
 const schoolsRouter = require("./routes/schools");
@@ -58,7 +62,12 @@ app.use("/api/histories", historyRouter);
 app.use("/api/schools", schoolsRouter);
 
 app.use("/api/plea", pleaRouter);
+
+app.use("/api/childregnotis", childregnotisRouter);
+app.use("/api/notifications", notificationRouter);
+
 app.use("/api/quiz", quizRouter);
+
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 // catch 404 and forward to error handler

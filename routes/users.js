@@ -588,10 +588,11 @@ router.get("/search", async (req, res) => {
 		// 검색 조건에 맞는 사용자 조회
 		const users = await User.findAll({
 			where: whereCondition,
-			attributes: ["id", "username", "phone"],
+			attributes: ["user_id", "id", "username", "phone"],
 		});
 
 		const userDetails = users.map((user) => ({
+			user_id: user.user_id,
 			id: user.id,
 			name: user.username,
 			phone: user.phone,
