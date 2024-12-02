@@ -19,7 +19,6 @@ const pleaRouter = require("./routes/plea");
 const childregnotisRouter = require("./routes/childregnotis");
 const notificationRouter = require("./routes/notifications");
 
-
 const quizRouter = require("./routes/quiz");
 
 const schoolsRouter = require("./routes/schools");
