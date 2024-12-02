@@ -663,6 +663,13 @@ router.post("/token", async (req, res) => {
 	}
 });
 
+router.post("/oauth", (req, res) => {
+	const clientId = process.env.OPEN_BANK_ID;
+	const redirectUri = process.env.REDIRECT_URI;
+	const authUrl = `https://testapi.openbanking.or.kr/oauth/2.0/authorize?response_type=code&client_id=${clientId}&scope=login%20inquiry%20transfer&state=12345678901234567890123456789012&auth_type=0&redirect_uri=${redirectUri}`;
+	res.send(authUrl);
+	// res.json(authUrl);
+});
 router.put("/:id", async (req, res) => {
 	const user_id = req.params.id;
 	const { schoolName } = req.body;
