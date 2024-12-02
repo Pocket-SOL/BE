@@ -11,7 +11,7 @@ module.exports = function (sequelize, DataTypes) {
 			},
 			user_id: {
 				type: DataTypes.BIGINT,
-				allowNull: true,
+				allowNull: false,
 				references: {
 					model: "user",
 					key: "user_id",
@@ -19,6 +19,11 @@ module.exports = function (sequelize, DataTypes) {
 			},
 			account_number: {
 				type: DataTypes.STRING(20),
+				allowNull: true,
+			},
+			//가상계좌번호(fin_tech_num)
+			account_num: {
+				type: DataTypes.STRING(30),
 				allowNull: false,
 			},
 		},

@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const {
 	Account,
+	User,
 	History,
 	SubAccount,
 	SubAccountHistory,
@@ -38,7 +39,43 @@ const { PARENT_BANK, CHILD_BANK } = require("../util/account_const");
  *                   description: 유저의 계좌 잔액
  *                   example: 5800
  */
+//계좌&세부계좌 생성
+router.post("/", async (req, res, next) => {
+	const userId = req.body.id;
+	const num = req.body.num;
+	console.log(userId, num);
 
+	try {
+		const user = User.findByPk(userId);
+
+		if (!user) {
+			return res.status(400).json({
+				success: false,
+				message: `User with ID ${userId} does not exist.`,
+			});
+		}
+		const account = await Account.create({
+			user_id: userId,
+			account_num: num,
+		});
+		// console.log(account);
+		const sub = await SubAccount.bulkCreate([
+			{ account_id: account.account_id, sub_account_usage: "고정" },
+			{ account_id: account.account_id, sub_account_usage: "자유" },
+			{ account_id: account.account_id, sub_account_usage: "잉여" },
+		]);
+		// console.log(sub);
+		res.status(201).json({
+			success: true,
+			message: "Account & SubAccount created successfully",
+			account,
+			sub,
+		});
+	} catch (error) {
+		console.error(error);
+		next(error);
+	}
+});
 /**
  * @swagger
  * /api/accounts:
@@ -461,13 +498,13 @@ router.post("/:childId", async (req, res, next) => {
 	// console.log("req body", req.body);
 	const parentId = 1;
 	const { childId } = req.params;
-
+	console.log("차일드아이디", childId);
 	const temp = req.body;
 	console.log(temp);
 
 	const parentAccount = await Account.findOne({ where: { user_id: parentId } });
 	const childAccount = await Account.findOne({ where: { user_id: childId } });
-
+	console.log("c-a", childAccount);
 	const [inputAmount, outputAmount] = await Promise.all([
 		History.sum("amount", {
 			where: { account_id: parentAccount.account_id, transaction_type: "입금" },
@@ -487,7 +524,7 @@ router.post("/:childId", async (req, res, next) => {
 	const dateTemp = iso.toISOString();
 	const date = dateTemp.substring(0, 10); // "2024-11-21"
 	const time = dateTemp.substring(11, 19);
-	console.log("날짜", date);
+	// console.log("날짜", date);
 	const from = {
 		account_id: parentAccount.account_id,
 		bank: PARENT_BANK,

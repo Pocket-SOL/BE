@@ -203,13 +203,6 @@ db.Noti.belongsTo(db.User, {
 // 	.catch((err) => {
 // 		console.error(err);
 // 	});
-// db.Plea.sync({ alter: true })
-// 	.then((result) => {
-// 		console.log(result);
-// 	})
-// 	.catch((error) => {
-// 		console.log(error);
-// 	});
 
 // db.Purchase.sync({ alter: true })
 // 	.then((result) => {
