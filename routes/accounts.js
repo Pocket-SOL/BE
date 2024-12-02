@@ -10,6 +10,7 @@ const {
 } = require("../models");
 const { where } = require("sequelize");
 const { PARENT_BANK, CHILD_BANK } = require("../util/account_const");
+const axios = require("axios");
 
 /**
  * @swagger
@@ -386,6 +387,51 @@ router.get("/withdrawals", (req, res, next) => {
 			});
 	});
 });
+
+function generateBankTranId() {
+	const uniqueId = Date.now().toString().slice(-9); // 현재 시간에서 마지막 6자리 추출
+	return `M202402739U${uniqueId}`; // 고유 ID 생성
+}
+
+function generageTrandDtime() {
+	const now = new Date(Date.now());
+	const tranDtime = now
+		.toISOString()
+		.replace(/[-T:.Z]/g, "")
+		.slice(0, 14);
+	return tranDtime;
+}
+
+router.get("/balance", async (req, res, next) => {
+	try {
+		const { token, id } = req.query;
+		if (!token || !id) {
+			return res.status(400).json({ error: "Token and user_id are required" });
+		}
+		const acc = await Account.findOne({ where: { user_id: id } });
+		if (!acc) {
+			return res
+				.status(404)
+				.json({ error: "Account not found for the given user ID" });
+		}
+		const bankTranId = generateBankTranId();
+		const tranDtime = generageTrandDtime();
+		const apiUrl = `https://testapi.openbanking.or.kr/v2.0/account/balance/fin_num?bank_tran_id=${bankTranId}&fintech_use_num=${acc.account_num}&tran_dtime=${tranDtime}`;
+		const response = await axios.get(apiUrl, {
+			headers: {
+				"Content-type": "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+		});
+		res.json(response.data);
+	} catch (error) {
+		console.error("Failed to fetch account balance:", error);
+		res.status(500).json({
+			error: error.response?.data || "Failed to fetch account balance",
+		});
+	}
+});
+
 /**
  * @swagger
  * /api/accounts/{childId}:

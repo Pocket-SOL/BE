@@ -2,6 +2,23 @@ const express = require("express");
 const { User } = require("../models");
 const router = express.Router();
 const upload = require("../config/multer");
+const axios = require("axios");
+
+router.get("/", async (req, res) => {
+	const apiKey = process.env.SCHOOL_KEY;
+	const url = `http://openapi.seoul.go.kr:8088/${apiKey}/json/neisSchoolInfoHs/1/1000/`;
+	try {
+		const response = await axios.get(url);
+		console.log(response.data);
+		const data = response.data.neisSchoolInfoHs.row;
+		const schoolData = data.map((school) => school.SCHUL_NM);
+		console.log(schoolData);
+		res.send(schoolData);
+	} catch (error) {
+		console.error("Error fetching school data:", error);
+		res.status(500).json({ error: "Failed to fetch school data" });
+	}
+});
 
 router.post("/img/", upload.single("image"), (req, res, next) => {
 	try {
