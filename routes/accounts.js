@@ -498,13 +498,13 @@ router.post("/:childId", async (req, res, next) => {
 	// console.log("req body", req.body);
 	const parentId = 1;
 	const { childId } = req.params;
-
+	console.log("차일드아이디", childId);
 	const temp = req.body;
 	console.log(temp);
 
 	const parentAccount = await Account.findOne({ where: { user_id: parentId } });
 	const childAccount = await Account.findOne({ where: { user_id: childId } });
-
+	console.log("c-a", childAccount);
 	const [inputAmount, outputAmount] = await Promise.all([
 		History.sum("amount", {
 			where: { account_id: parentAccount.account_id, transaction_type: "입금" },
@@ -524,7 +524,7 @@ router.post("/:childId", async (req, res, next) => {
 	const dateTemp = iso.toISOString();
 	const date = dateTemp.substring(0, 10); // "2024-11-21"
 	const time = dateTemp.substring(11, 19);
-	console.log("날짜", date);
+	// console.log("날짜", date);
 	const from = {
 		account_id: parentAccount.account_id,
 		bank: PARENT_BANK,
