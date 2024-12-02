@@ -670,6 +670,25 @@ router.post("/oauth", (req, res) => {
 	res.send(authUrl);
 	// res.json(authUrl);
 });
+
+router.get("/me", async (req, res) => {
+	const { token, user_seq_no } = req.query;
+	try {
+		const response = await axios.get(
+			`https://testapi.openbanking.or.kr/v2.0/user/me?user_seq_no=${user_seq_no}`,
+			{
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			},
+		);
+
+		res.json(response.data);
+	} catch (error) {
+		console.error("Error calling Open Banking API:", error);
+		res.status(500).json({ error: "Failed to fetch open user data" });
+	}
+});
 router.put("/:id", async (req, res) => {
 	const user_id = req.params.id;
 	const { schoolName } = req.body;
