@@ -39,6 +39,8 @@ db.ScheduledTransfer = require("./scheduledtransfer")(
 db.Plea = require("./plea")(sequelize, Sequelize.DataTypes);
 db.ActivityLog = require("./activitylog")(sequelize, Sequelize.DataTypes);
 db.Quiz = require("./quiz")(sequelize, Sequelize.DataTypes);
+db.Tip = require("./tip")(sequelize, Sequelize.DataTypes);
+
 db.Noti = require("./noti")(sequelize, Sequelize.DataTypes);
 
 //관계설정
@@ -212,14 +214,6 @@ db.Noti.belongsTo(db.User, {
 // 		console.error(err);
 // 	});
 
-// db.ChildRegNoti.sync({ alter: true })
-// 	.then((result) => {
-// 		console.log(result);
-// 	})
-// 	.catch((err) => {
-// 		console.error(err);
-// 	});
-
 // db.User.sync({ alter: true })
 // 	.then((result) => {
 // 		console.log(result);
@@ -243,4 +237,12 @@ db.Noti.belongsTo(db.User, {
 // // 		console.error(err);
 // // 	});
 //db객체 외부로 노출하기
+
+db.Tip.sync({ alter: true })
+	.then((result) => {
+		console.log(result);
+	})
+	.catch((err) => {
+		console.error(err);
+	});
 module.exports = db;

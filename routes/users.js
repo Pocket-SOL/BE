@@ -2,12 +2,13 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
-
+const axios = require("axios");
+const dotenv = require("dotenv");
 const router = express.Router();
 const { User } = require("../models");
 const { Op } = require("sequelize");
 const user = require("../models/user");
-
+dotenv.config();
 /**
  * @swagger
  * /api/users/signup:
@@ -265,6 +266,7 @@ router.post("/login", async (req, res) => {
 			birth: user.birth,
 			phone: user.phone,
 			school_auth: user.school_auth,
+			parent_id: user.parent_id,
 			role: user.role,
 			school: user.school,
 		});
@@ -413,6 +415,7 @@ router.get("/auth", async (req, res) => {
 			school_auth: user.school_auth,
 			role: user.role,
 			school: user.school,
+			parent_id: user.parent_id,
 			open_token: user.open_token,
 			user_seq_no: user.user_seq_no,
 		});
@@ -634,6 +637,58 @@ router.put("/token", async (req, res) => {
 	}
 });
 
+router.post("/token", async (req, res) => {
+	const { code } = req.body;
+	const requestData = new URLSearchParams();
+	requestData.append("code", code);
+	requestData.append("client_id", process.env.OPEN_BANK_ID);
+	requestData.append("client_secret", process.env.CLIENT_SECRET);
+	requestData.append("redirect_uri", process.env.REDIRECT_URI);
+	requestData.append("grant_type", "authorization_code");
+
+	try {
+		const response = await axios.post(
+			"https://testapi.openbanking.or.kr/oauth/2.0/token",
+			requestData,
+			{
+				headers: {
+					"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+				},
+			},
+		);
+		res.json(response.data); // OpenAPI로부터 받은 데이터 반환
+	} catch (error) {
+		console.error(error);
+		res.status(500).json({ error: "API 호출 중 오류 발생" });
+	}
+});
+
+router.post("/oauth", (req, res) => {
+	const clientId = process.env.OPEN_BANK_ID;
+	const redirectUri = process.env.REDIRECT_URI;
+	const authUrl = `https://testapi.openbanking.or.kr/oauth/2.0/authorize?response_type=code&client_id=${clientId}&scope=login%20inquiry%20transfer&state=12345678901234567890123456789012&auth_type=0&redirect_uri=${redirectUri}`;
+	res.send(authUrl);
+	// res.json(authUrl);
+});
+
+router.get("/me", async (req, res) => {
+	const { token, user_seq_no } = req.query;
+	try {
+		const response = await axios.get(
+			`https://testapi.openbanking.or.kr/v2.0/user/me?user_seq_no=${user_seq_no}`,
+			{
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			},
+		);
+
+		res.json(response.data);
+	} catch (error) {
+		console.error("Error calling Open Banking API:", error);
+		res.status(500).json({ error: "Failed to fetch open user data" });
+	}
+});
 router.put("/:id", async (req, res) => {
 	const user_id = req.params.id;
 	const { schoolName } = req.body;
@@ -647,6 +702,17 @@ router.put("/:id", async (req, res) => {
 		res.json({ ok: true, response: updateSchool });
 	} catch (error) {
 		console.error(error);
+	}
+});
+
+router.get("/:id", async (req, res) => {
+	try {
+		const user = await User.findOne({
+			where: { user_id: req.params.id },
+		});
+		res.json(user);
+	} catch (error) {
+		res.status(500).json({ message: "Error fetching user data" });
 	}
 });
 

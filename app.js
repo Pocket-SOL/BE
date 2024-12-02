@@ -20,6 +20,7 @@ const childregnotisRouter = require("./routes/childregnotis");
 const notificationRouter = require("./routes/notifications");
 
 const quizRouter = require("./routes/quiz");
+const tipRouter = require("./routes/tip");
 
 const schoolsRouter = require("./routes/schools");
 
@@ -66,6 +67,7 @@ app.use("/api/childregnotis", childregnotisRouter);
 app.use("/api/notifications", notificationRouter);
 
 app.use("/api/quiz", quizRouter);
+app.use("/api/tip", tipRouter);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
