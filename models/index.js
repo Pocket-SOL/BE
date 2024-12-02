@@ -187,14 +187,14 @@ db.Noti.belongsTo(db.User, {
 	onUpdate: "CASCADE",
 });
 
-sequelize
-	.sync({ alter: true })
-	.then((result) => {
-		console.log(result);
-	})
-	.catch((err) => {
-		console.error(err);
-	});
+// sequelize
+// 	.sync({ alter: true })
+// 	.then((result) => {
+// 		console.log(result);
+// 	})
+// 	.catch((err) => {
+// 		console.error(err);
+// 	});
 
 // db.User.sync({ alter: true })
 // 	.then((result) => {

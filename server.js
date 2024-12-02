@@ -29,6 +29,16 @@ io.on("connection", (socket) => {
 	// 	message: "Welcome! You have a new notification.",
 	// });
 
+	socket.on("askChildren", (data) => {
+		// console.log("Notification to sender_id:", data.sender_id);
+		// console.log("Notification to receiver_id:", data.receiver_id);
+		io.to(data.child_id).emit("askAccept", {
+			parent_id: data.parent_id,
+			message: data.message,
+			type: "ask",
+		});
+	});
+
 	// 클라이언트 요청 처리 (예: 특정 이벤트)
 	socket.on("newComment", (data) => {
 		console.log("Notification to WriterId:", data.writer);
