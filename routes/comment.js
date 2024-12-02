@@ -1,9 +1,13 @@
 const express = require("express");
 const router = express.Router();
 
-const { Comment } = require("../models");
+const { Comment, Purchase, Noti, User } = require("../models");
 const { default: userAuth } = require("../middlewares/userAuth");
 const user = require("../models/user");
+const { userSocketMap } = require("../server"); // server.js에서 userSocketMap을 가져옴
+const { io } = require("../server"); // 소켓 서버
+
+// const userSocketMap = {};
 
 /**
  * @swagger
@@ -153,12 +157,50 @@ router.get("/:id", async (req, res) => {
 router.post("/:id", async (req, res) => {
 	try {
 		const PurchaseId = req.params.id;
-		const { username, content } = req.body;
+		const { user_id, username, content } = req.body;
+		// 댓글 작성.
 		const comment = await Comment.create({
+			user_id: user_id,
 			purchase_id: PurchaseId,
 			username,
 			content,
 		});
+		console.log("comment완료");
+		// 댓글이 달린 게시글의 작성자 확인
+		const purchase = await Purchase.findOne({
+			where: { purchase_id: PurchaseId },
+		});
+		console.log("purchase", purchase.username);
+		if (purchase && purchase.username) {
+			const recipientUsername = purchase.user_id; // 게시글 작성자
+			const senderId = user_id; // 댓글 작성자
+			const receiverId = recipientUsername; // 알림 받을 사용자
+
+			const comment = {
+				type: "COMMENT", // 알림 유형: 댓글
+				content: `새로운 댓글이 달렸습니다: "${content}"`,
+				sender_id: senderId,
+				receiver_id: receiverId,
+				isread: false, // 읽지 않은 상태 0저장
+			};
+
+			// 알림 데이터 저장
+			const notification = await Noti.create(comment);
+
+			console.log(`Notification created: ${notification.notification_id}`);
+			console.log(userSocketMap);
+			// if (userSocketMap[recipientUsername]) {
+			// 	const recipientSocketId = userSocketMap[recipientUsername];
+			// 	io.to(recipientSocketId).emit("notification", {
+			// 		type: "COMMENT", // 타입 일치
+			// 		content: `새로운 댓글이 달렸습니다: "${content}"`, // 내용 일치
+			// 		sender_id: senderId, // sender_id 일치
+			// 		receiver_id: receiverId, // receiver_id 일치
+			// 		isread: false, // 읽지 않은 상태
+			// 	});
+			// 	console.log("전달");
+			// }
+		}
 		res.json({ ok: true, response: comment });
 	} catch (error) {
 		res.status(500).json({ error: error.message });

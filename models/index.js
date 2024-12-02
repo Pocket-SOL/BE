@@ -39,6 +39,7 @@ db.ScheduledTransfer = require("./scheduledtransfer")(
 db.Plea = require("./plea")(sequelize, Sequelize.DataTypes);
 db.ActivityLog = require("./activitylog")(sequelize, Sequelize.DataTypes);
 db.Quiz = require("./quiz")(sequelize, Sequelize.DataTypes);
+db.Noti = require("./noti")(sequelize, Sequelize.DataTypes);
 
 //관계설정
 db.Account.hasMany(db.History, {
@@ -175,6 +176,17 @@ db.ChildRegNoti.belongsTo(db.User, {
 	onUpdate: "CASCADE",
 });
 
+db.Noti.belongsTo(db.User, {
+	foreignKey: "sender_id",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
+db.Noti.belongsTo(db.User, {
+	foreignKey: "receiver_id",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
+
 sequelize
 	.sync({ alter: true })
 	.then((result) => {
@@ -192,5 +204,43 @@ sequelize
 // 		console.error(err);
 // 	});
 
+// db.Purchase.sync({ alter: true })
+// 	.then((result) => {
+// 		console.log(result);
+// 	})
+// 	.catch((err) => {
+// 		console.error(err);
+// 	});
+
+// db.ChildRegNoti.sync({ alter: true })
+// 	.then((result) => {
+// 		console.log(result);
+// 	})
+// 	.catch((err) => {
+// 		console.error(err);
+// 	});
+
+// db.User.sync({ alter: true })
+// 	.then((result) => {
+// 		console.log(result);
+// 	})
+// 	.catch((err) => {
+// 		console.error(err);
+// 	});
+// db.Noti.sync({ alter: true })
+// 	.then((result) => {
+// 		console.log(result);
+// 	})
+// 	.catch((err) => {
+// 		console.error(err);
+// 	});
+
+// // db.Quiz.sync({ alter: true })
+// // 	.then((result) => {
+// // 		console.log(result);
+// // 	})
+// // 	.catch((err) => {
+// // 		console.error(err);
+// // 	});
 //db객체 외부로 노출하기
 module.exports = db;
