@@ -30,12 +30,19 @@ io.on("connection", (socket) => {
 	// });
 
 	socket.on("askChildren", (data) => {
-		// console.log("Notification to sender_id:", data.sender_id);
-		// console.log("Notification to receiver_id:", data.receiver_id);
 		io.to(data.child_id).emit("askAccept", {
 			parent_id: data.parent_id,
 			message: data.message,
 			type: "ask",
+		});
+	});
+
+	socket.on("askAllowance", (data) => {
+		console.log("용돈요청");
+		io.to(data.parent_id).emit("ask-Accept-Allowance", {
+			child_id: data.child_id,
+			AllowanceMessage: data.message,
+			type: "ask-allowance",
 		});
 	});
 

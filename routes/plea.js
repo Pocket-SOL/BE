@@ -76,10 +76,11 @@ const { Plea } = require("../models");
 router.post("/:id", async (req, res) => {
 	try {
 		const ParentId = req.params.id;
-		const { amount } = req.body;
+		const { amount, user_id } = req.body;
 		const plea = await Plea.create({
 			parent_id: ParentId,
 			amount,
+			user_id,
 		});
 		res.json({ ok: true, response: plea });
 	} catch (error) {
