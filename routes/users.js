@@ -265,6 +265,7 @@ router.post("/login", async (req, res) => {
 			birth: user.birth,
 			phone: user.phone,
 			school_auth: user.school_auth,
+			parent_id: user.parent_id,
 			role: user.role,
 			school: user.school,
 		});
@@ -413,6 +414,7 @@ router.get("/auth", async (req, res) => {
 			school_auth: user.school_auth,
 			role: user.role,
 			school: user.school,
+			parent_id: user.parent_id,
 			open_token: user.open_token,
 			user_seq_no: user.user_seq_no,
 		});
@@ -647,6 +649,17 @@ router.put("/:id", async (req, res) => {
 		res.json({ ok: true, response: updateSchool });
 	} catch (error) {
 		console.error(error);
+	}
+});
+
+router.get("/:id", async (req, res) => {
+	try {
+		const user = await User.findOne({
+			where: { user_id: req.params.id },
+		});
+		res.json(user);
+	} catch (error) {
+		res.status(500).json({ message: "Error fetching user data" });
 	}
 });
 
