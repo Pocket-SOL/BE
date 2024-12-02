@@ -502,7 +502,7 @@ router.get("/my-children", async (req, res) => {
 		// parent_id가 일치하는 모든 사용자 조회
 		const users = await User.findAll({
 			where: { parent_id },
-			attributes: ["id", "username"], // 필요한 필드만 선택
+			attributes: ["id", "username", "user_id"], // 필요한 필드만 선택
 		});
 
 		if (!users || users.length === 0) {
@@ -514,6 +514,7 @@ router.get("/my-children", async (req, res) => {
 		// id와 name을 포함한 배열 반환
 		const userDetails = users.map((user) => ({
 			id: user.id,
+			user_id: user.user_id,
 			name: user.username,
 		}));
 
