@@ -325,7 +325,10 @@ router.get("/history", (req, res, next) => {
 		if (!account) {
 			return res.status(404).json({ message: "Account not found" });
 		}
-		History.findAll({ where: { account_id: account.account_id } })
+		History.findAll({
+			where: { account_id: account.account_id },
+			order: [["history_id", "DESC"]],
+		})
 			.then((history) => {
 				res.json(history);
 			})
