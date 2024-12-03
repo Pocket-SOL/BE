@@ -68,6 +68,9 @@ router.get("/", async (req, res, next) => {
 	}
 
 	const account = await Account.findOne({ where: { user_id: userId } });
+	if (!account) {
+		return res.status(404).json({ message: "계좌를 찾을 수 없습니다." });
+	}
 	SubAccountHistory.findAll({
 		attributes: [
 			"sub_account_id",
@@ -95,7 +98,7 @@ router.get("/", async (req, res, next) => {
 		where: {
 			sub_account_id: {
 				[Sequelize.Op.in]: Sequelize.literal(
-					`(SELECT sub_account_id FROM subaccount WHERE account_id = ${userId})`,
+					`(SELECT sub_account_id FROM subaccount WHERE account_id = ${account.account_id})`,
 				),
 			},
 		},
