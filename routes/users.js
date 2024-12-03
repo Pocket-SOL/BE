@@ -269,6 +269,8 @@ router.post("/login", async (req, res) => {
 			parent_id: user.parent_id,
 			role: user.role,
 			school: user.school,
+			open_token: user.open_token,
+			user_seq_no: user.user_seq_no,
 		});
 	} catch (error) {
 		res.status(500).json({ error: error.message });
