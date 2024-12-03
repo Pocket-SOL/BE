@@ -6,11 +6,11 @@ const axios = require("axios");
 
 router.get("/", async (req, res) => {
 	const apiKey = process.env.SCHOOL_KEY;
-	const url = `http://openapi.seoul.go.kr:8088/${apiKey}/json/neisSchoolInfoHs/1/1000/`;
+	const url = `http://openapi.seoul.go.kr:8088/${apiKey}/json/neisSchoolInfoMS/1/1000/`;
 	try {
 		const response = await axios.get(url);
 		console.log(response.data);
-		const data = response.data.neisSchoolInfoHs.row;
+		const data = response.data.neisSchoolInfoMS.row;
 		const schoolData = data.map((school) => school.SCHUL_NM);
 		console.log(schoolData);
 		res.send(schoolData);

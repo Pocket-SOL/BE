@@ -423,6 +423,11 @@ router.get("/balance", async (req, res, next) => {
 				Authorization: `Bearer ${token}`,
 			},
 		});
+
+		console.log("AAA");
+		console.log(response);
+		res.json(response.data);
+
 		if (response.rsp_code !== "A0002") {
 			res.json(response.data);
 		} else {
