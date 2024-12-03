@@ -427,22 +427,15 @@ router.get("/balance", async (req, res, next) => {
 			},
 		});
 
-		console.log("AAA");
-		console.log(response);
-		res.json(response.data);
-
-		if (response.rsp_code !== "A0002") {
-			res.json(response.data);
-		} else {
+		if (response?.rsp_code !== "A0002") {
 			res.status(500).json({
-				error: error.response?.data || "Failed to fetch account balance",
+				error: response?.rsp_message || "Failed to fetch account balance",
 			});
+		} else {
+			res.json(response.data); // 정상 응답 전송
 		}
 	} catch (error) {
 		console.error("Failed to fetch account balance:", error);
-		res.status(500).json({
-			error: error.response?.data || "Failed to fetch account balance",
-		});
 	}
 });
 
