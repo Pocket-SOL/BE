@@ -4,8 +4,6 @@ const router = express.Router();
 const { Comment, Purchase, Noti, User } = require("../models");
 const { default: userAuth } = require("../middlewares/userAuth");
 const user = require("../models/user");
-const { userSocketMap } = require("../server"); // server.js에서 userSocketMap을 가져옴
-const { io } = require("../server"); // 소켓 서버
 
 // const userSocketMap = {};
 
@@ -186,20 +184,6 @@ router.post("/:id", async (req, res) => {
 
 			// 알림 데이터 저장
 			const notification = await Noti.create(comment);
-
-			console.log(`Notification created: ${notification.notification_id}`);
-			console.log(userSocketMap);
-			// if (userSocketMap[recipientUsername]) {
-			// 	const recipientSocketId = userSocketMap[recipientUsername];
-			// 	io.to(recipientSocketId).emit("notification", {
-			// 		type: "COMMENT", // 타입 일치
-			// 		content: `새로운 댓글이 달렸습니다: "${content}"`, // 내용 일치
-			// 		sender_id: senderId, // sender_id 일치
-			// 		receiver_id: receiverId, // receiver_id 일치
-			// 		isread: false, // 읽지 않은 상태
-			// 	});
-			// 	console.log("전달");
-			// }
 		}
 		res.json({ ok: true, response: comment });
 	} catch (error) {

@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { Plea } = require("../models");
+const { Plea, Noti } = require("../models");
 
 /**
  * @swagger
@@ -82,6 +82,20 @@ router.post("/:id", async (req, res) => {
 			amount,
 			user_id,
 		});
+
+		// if (plea) {
+		// 	const pleaNoti = {
+		// 		type: "PleaAllowance",
+		// 		content: "용돈 요청이 도착했어요",
+		// 		amount: amount,
+		// 		status: "pending",
+		// 		sender_id: ParentId,
+		// 		receiver_id: user_id,
+		// 		isread: false,
+		// 	};
+		// 	await Noti.create(pleaNoti);
+		// }
+
 		res.json({ ok: true, response: plea });
 	} catch (error) {
 		res.status(500).json({ error: error.message });

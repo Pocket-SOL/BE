@@ -423,6 +423,8 @@ router.get("/balance", async (req, res, next) => {
 				Authorization: `Bearer ${token}`,
 			},
 		});
+		console.log("AAA");
+		console.log(response);
 		res.json(response.data);
 	} catch (error) {
 		console.error("Failed to fetch account balance:", error);
