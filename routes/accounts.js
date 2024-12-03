@@ -406,10 +406,11 @@ function generageTrandDtime() {
 
 router.get("/balance", async (req, res, next) => {
 	try {
-		const { token, id } = req.query;
-		if (!token || !id) {
+		const { id } = req.query;
+		if (!id) {
 			return res.status(400).json({ error: "Token and user_id are required" });
 		}
+		const user = await User.findOne({ where: { user_id: id } });
 		const acc = await Account.findOne({ where: { user_id: id } });
 		if (!acc) {
 			return res
@@ -422,7 +423,7 @@ router.get("/balance", async (req, res, next) => {
 		const response = await axios.get(apiUrl, {
 			headers: {
 				"Content-type": "application/json",
-				Authorization: `Bearer ${token}`,
+				Authorization: `Bearer ${user.open_token}`,
 			},
 		});
 
