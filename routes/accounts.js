@@ -107,37 +107,38 @@ router.post("/", async (req, res, next) => {
  */
 
 //user의 계좌잔액 불러오기
-router.get("/", (req, res, next) => {
-	const userId = req.query.id;
-	console.log(userId);
-	if (!userId) {
-		return res.status(400).json({ message: "User ID is required" });
-	}
+router.get("/", async (req, res, next) => {
+	try {
+		const userId = req.query.id;
+		console.log(userId);
+		if (!userId) {
+			return res.status(400).json({ message: "User ID is required" });
+		}
+		// 계좌 정보 조회
+		const account = await Account.findOne({ where: { user_id: userId } });
+		if (!account) {
+			return res.status(404).json({ message: "Account not found" });
+		}
 
-	Account.findOne({ where: { user_id: userId } })
-		.then((account) => {
-			if (!account) {
-				return res.status(404).json({ message: "Account not found" });
-			}
-
-			History.sum("amount", {
+		// 입금 합계 조회
+		const inputAmount =
+			(await History.sum("amount", {
 				where: { account_id: account.account_id, transaction_type: "입금" },
-			})
-				.then((inputAmount) => {
-					const amount = inputAmount;
-					History.sum("amount", {
-						where: { account_id: account.account_id, transaction_type: "출금" },
-					}).then((outputAmount) => {
-						res.json({ totalAmount: amount - outputAmount });
-					});
-				})
-				.catch((err) => {
-					next(err);
-				});
-		})
-		.catch((err) => {
-			next(err);
-		});
+			})) || 0;
+
+		// 출금 합계 조회
+		const outputAmount =
+			(await History.sum("amount", {
+				where: { account_id: account.account_id, transaction_type: "출금" },
+			})) || 0;
+
+		// 잔액 계산 및 반환
+		const totalAmount = inputAmount - outputAmount;
+		res.json({ totalAmount });
+	} catch (error) {
+		// 에러 처리
+		next(error);
+	}
 });
 
 //user의 계좌 이용 내역
@@ -552,12 +553,8 @@ router.get("/balance", async (req, res, next) => {
  */
 
 router.post("/:childId", async (req, res, next) => {
-	// console.log("request", req);
-	// console.log("req body", req.body);
 	const { childId } = req.params;
-	console.log("차일드아이디", childId);
 	const temp = req.body;
-	console.log(temp);
 	const parentId = temp.from.parent_id;
 
 	const parentAccount = await Account.findOne({
@@ -578,7 +575,7 @@ router.post("/:childId", async (req, res, next) => {
 
 	if (balance < temp.from.amount) {
 		// ("잔액이 부족합니다", 400);
-		res.status(404).json({ message: "돈없음" });
+		res.status(404).json({ message: "잔액이 부족합니다." });
 	}
 
 	const iso = new Date();
