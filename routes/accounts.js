@@ -423,9 +423,18 @@ router.get("/balance", async (req, res, next) => {
 				Authorization: `Bearer ${token}`,
 			},
 		});
+
 		console.log("AAA");
 		console.log(response);
 		res.json(response.data);
+
+		if (response.rsp_code !== "A0002") {
+			res.json(response.data);
+		} else {
+			res.status(500).json({
+				error: error.response?.data || "Failed to fetch account balance",
+			});
+		}
 	} catch (error) {
 		console.error("Failed to fetch account balance:", error);
 		res.status(500).json({
