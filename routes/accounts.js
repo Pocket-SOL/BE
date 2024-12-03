@@ -109,6 +109,7 @@ router.post("/", async (req, res, next) => {
 //user의 계좌잔액 불러오기
 router.get("/", (req, res, next) => {
 	const userId = req.query.id;
+	console.log(userId);
 	if (!userId) {
 		return res.status(400).json({ message: "User ID is required" });
 	}
@@ -553,13 +554,16 @@ router.get("/balance", async (req, res, next) => {
 router.post("/:childId", async (req, res, next) => {
 	// console.log("request", req);
 	// console.log("req body", req.body);
-	const parentId = 1;
 	const { childId } = req.params;
 	console.log("차일드아이디", childId);
 	const temp = req.body;
 	console.log(temp);
+	const parentId = temp.from.parent_id;
 
-	const parentAccount = await Account.findOne({ where: { user_id: parentId } });
+	const parentAccount = await Account.findOne({
+		where: { user_id: parentId },
+	});
+	console.log(parentAccount);
 	const childAccount = await Account.findOne({ where: { user_id: childId } });
 	console.log("c-a", childAccount);
 	const [inputAmount, outputAmount] = await Promise.all([
