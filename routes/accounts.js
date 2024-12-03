@@ -47,30 +47,58 @@ router.post("/", async (req, res, next) => {
 	console.log(userId, num);
 
 	try {
-		const user = User.findByPk(userId);
-
+		const user = await User.findByPk(userId);
+		console.log(user);
 		if (!user) {
 			return res.status(400).json({
 				success: false,
 				message: `User with ID ${userId} does not exist.`,
 			});
 		}
-		const account = await Account.create({
-			user_id: userId,
-			account_num: num,
-		});
-		// console.log(account);
-		const sub = await SubAccount.bulkCreate([
-			{ account_id: account.account_id, sub_account_usage: "고정" },
-			{ account_id: account.account_id, sub_account_usage: "자유" },
-			{ account_id: account.account_id, sub_account_usage: "잉여" },
-		]);
+		//계좌 생성
+		const account = await Account.create(
+			{
+				user_id: userId,
+				account_num: num,
+			},
+			{ raw: true },
+		);
+		let temp_res;
+		//부모 초기값 50마넌
+		if (user.role === "parent") {
+			const currentDateTime = new Date();
+			const date = currentDateTime.toISOString().split("T")[0];
+			const time = currentDateTime.toISOString().split("T")[1].split(".")[0];
+			console.log("account", account);
+			const his = await History.create({
+				date: date,
+				time: time,
+				transaction_type: "입금",
+				account_holder: "초기자금",
+				account_number: account.account_num,
+				amount: 500000,
+				account_id: account.account_id,
+				bank: "신한",
+			});
+			console.log(his);
+			temp_res = his;
+		}
+
+		//자녀 세부계좌 생성;
+		else {
+			const sub = await SubAccount.bulkCreate([
+				{ account_id: account.account_id, sub_account_usage: "고정" },
+				{ account_id: account.account_id, sub_account_usage: "자유" },
+				{ account_id: account.account_id, sub_account_usage: "잉여" },
+			]);
+			temp_res = sub;
+		}
 		// console.log(sub);
 		res.status(201).json({
 			success: true,
 			message: "Account & SubAccount created successfully",
 			account,
-			sub,
+			temp_res,
 		});
 	} catch (error) {
 		console.error(error);
