@@ -15,18 +15,18 @@ const axios = require("axios");
 /**
  * @swagger
  * /api/accounts:
- *   get:
+ *   post:
  *     tags:
  *       - Accounts
- *     summary: 유저의 잔액 조회 api
- *     description: 쿼리 파라미터로 받아온 유저(id=user_id)에 대한 잔액
+ *     summary: 계좌 & 세부계좌 생성
+ *     description: query로 받아온 유저에 대한 계좌와 세부계좌를 생성합니다.
  *     parameters:
  *       - in: query
  *         name: id
  *         schema:
  *           type: integer
  *         required: true
- *         description: 유저 아이디(pk)
+ *         description: id=user_id(pk)
  *     responses:
  *       200:
  *         description: 유저의 잔액
@@ -40,6 +40,7 @@ const axios = require("axios");
  *                   description: 유저의 계좌 잔액
  *                   example: 5800
  */
+
 //계좌&세부계좌 생성
 router.post("/", async (req, res, next) => {
 	const userId = req.body.id;
@@ -64,7 +65,7 @@ router.post("/", async (req, res, next) => {
 			{ raw: true },
 		);
 		let temp_res;
-		//부모 초기값 50마넌
+		//부모 초기값 50만원
 		if (user.role === "parent") {
 			const currentDateTime = new Date();
 			const date = currentDateTime.toISOString().split("T")[0];
@@ -111,18 +112,18 @@ router.post("/", async (req, res, next) => {
  *   get:
  *     tags:
  *       - Accounts
- *     summary: 유저의 잔액 조회 api
- *     description: 쿼리 파라미터로 받아온 유저(id=user_id)에 대한 잔액
+ *     summary: 잔액 조회
+ *     description: query로 받아온 유저에 대한 계좌 잔액
  *     parameters:
  *       - in: query
  *         name: id
  *         schema:
  *           type: integer
  *         required: true
- *         description: 유저 아이디(pk)
+ *         description: user = user_id(pk)
  *     responses:
  *       200:
- *         description: 유저의 잔액
+ *         description: 잔액 반환 성공
  *         content:
  *           application/json:
  *             schema:
@@ -176,15 +177,15 @@ router.get("/", async (req, res, next) => {
  *   get:
  *     tags:
  *       - Accounts
- *     summary: 계좌의 거래 내역 조회
- *     description: 특정 유저(user_id)의 계좌의 거래 내역을 조회합니다.
+ *     summary: 거래 내역 조회
+ *     description: query로 받아온 유저의 계좌의 거래 내역을 조회합니다.
  *     parameters:
  *       - in: query
  *         name: id
  *         schema:
  *           type: integer
  *         required: true
- *         description: 조회할 유저 ID (=> 해당 유저 계좌의 히스토리내역)
+ *         description: user=user_id(pk)
  *     responses:
  *       200:
  *         description: 거래 내역 조회 성공
@@ -225,7 +226,7 @@ router.get("/", async (req, res, next) => {
  *                     type: string
  *                     format: decimal
  *                     description: 거래 금액
- *                     example: "1000.00"
+ *                     example: "1000"
  *                   photo:
  *                     type: string
  *                     format: binary
@@ -239,82 +240,10 @@ router.get("/", async (req, res, next) => {
  *                   bank:
  *                     type: string
  *                     nullable: true
- *                     description: 은행 이름 (정보가 없으면 null)
- *                     example: null
+ *                     description: 은행 이름 
+ *                     example: 신한 은행
  */
 
-/**
- * @swagger
- * /api/accounts/history:
- *   get:
- *     tags:
- *       - Accounts
- *     summary: 계좌의 거래 내역 조회
- *     description: 특정 유저(user_id)의 계좌의 거래 내역을 조회합니다.
- *     parameters:
- *       - in: query
- *         name: id
- *         schema:
- *           type: integer
- *         required: true
- *         description: 조회할 유저 ID (=> 해당 유저 계좌의 히스토리내역)
- *     responses:
- *       200:
- *         description: 거래 내역 조회 성공
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   history_id:
- *                     type: integer
- *                     description: 거래 내역 ID
- *                     example: 1
- *                   date:
- *                     type: string
- *                     format: date
- *                     description: 거래 날짜
- *                     example: "2024-11-20"
- *                   time:
- *                     type: string
- *                     format: time
- *                     description: 거래 시간
- *                     example: "10:00:00"
- *                   transaction_type:
- *                     type: string
- *                     description: 거래 유형 (입금/출금)
- *                     example: "입금"
- *                   account_holder:
- *                     type: string
- *                     description: 거래 상대자 이름
- *                     example: "도은"
- *                   account_number:
- *                     type: string
- *                     description: 거래 계좌 번호
- *                     example: "계좌번호"
- *                   amount:
- *                     type: string
- *                     format: decimal
- *                     description: 거래 금액
- *                     example: "1000.00"
- *                   photo:
- *                     type: string
- *                     format: binary
- *                     nullable: true
- *                     description: 거래와 관련된 사진 (있을 경우)
- *                     example: null
- *                   account_id:
- *                     type: integer
- *                     description: 계좌 ID
- *                     example: 2
- *                   bank:
- *                     type: string
- *                     nullable: true
- *                     description: 은행 이름 (정보가 없으면 null)
- *                     example: null
- */
 
 router.get("/history", (req, res, next) => {
 	const userId = req.query.id;
@@ -342,21 +271,21 @@ router.get("/history", (req, res, next) => {
  * @swagger
  * /api/accounts/withdrawals:
  *   get:
- *     summary: "Retrieve total withdrawal amount for a user"
- *     description: "Fetches the total amount withdrawn from the user's account."
+ *     summary: "출금 금액 반환"
+ *     description: "query로 받아온 유저의 계좌 출금 금액을 반환합니다."
  *     tags:
  *       - "Accounts"
  *     parameters:
  *       - in: query
  *         name: id
  *         required: true
- *         description: "The ID of the user whose withdrawal total is to be retrieved."
+ *         description: "user=user_id(pk)"
  *         schema:
  *           type: integer
  *           example: 1
  *     responses:
  *       200:
- *         description: "Total withdrawal amount retrieved successfully."
+ *         description: "출금액 반환 성공"
  *         content:
  *           application/json:
  *             schema:
@@ -366,7 +295,7 @@ router.get("/history", (req, res, next) => {
  *                   type: number
  *                   format: float
  *                   example: 5000.00
- *                   description: "Total withdrawal amount for the user."
+ *                   description: "유저에 대한 총 출금액을 반환합니다."
  *       400:
  *         description: "Bad Request - Missing or invalid user ID."
  *         content:
@@ -434,6 +363,69 @@ function generageTrandDtime() {
 		.slice(0, 14);
 	return tranDtime;
 }
+/**
+ * @swagger
+ * /balance:
+ *   get:
+ *     summary: 오픈뱅킹 - 계좌 조회 
+ *     description: 계좌 정보를 조회하는 오픈뱅킹 API를 호출합니다.
+ *     tags:
+ *       - Accounts
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: user=user_id(pk)
+ *     responses:
+ *       200:
+ *         description: 계좌 정보 반환 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 balance_amt:
+ *                   type: string
+ *                   description: The current account balance from teh OpenBanking API.
+ *                 rsp_code:
+ *                   type: string
+ *                   description: The response code from the OpenBanking API.
+ *                 rsp_message:
+ *                   type: string
+ *                   description: The response message from the OpenBanking API.
+ *       400:
+ *         description: Missing or invalid parameters.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: Error message explaining the invalid parameters.
+ *       404:
+ *         description: Account not found for the given user ID.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: Error message explaining that the account was not found.
+ *       500:
+ *         description: Failed to fetch account balance.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: General error message.
+ */
 
 router.get("/balance", async (req, res, next) => {
 	try {
@@ -476,15 +468,15 @@ router.get("/balance", async (req, res, next) => {
  *   post:
  *     tags:
  *       - Accounts
- *     summary: 자녀에게 용돈 송금
- *     description: 부모가 자녀에게 용돈을 송금합니다. 고정비용과 자유금액으로 나누어 송금할 수 있습니다.
+ *     summary: 송금 이체
+ *     description: 용돈을 고정지출과 자유지출으로 나누어 송금합니다.
  *     parameters:
  *       - in: path
  *         name: childId
  *         required: true
  *         schema:
  *           type: integer
- *         description: 자녀 ID
+ *         description: 자녀(user=user_id)
  *     requestBody:
  *       required: true
  *       content:
@@ -574,7 +566,7 @@ router.get("/balance", async (req, res, next) => {
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "돈없음"
+ *                   example: "잔액이 부족합니다"
  */
 
 router.post("/:childId", async (req, res, next) => {
@@ -631,14 +623,7 @@ router.post("/:childId", async (req, res, next) => {
 	console.log(from, to);
 	console.log(from, to);
 	const histories = await History.bulkCreate([from, to]);
-	// 여기는 통합 계좌 내역에  추가된 것 (고정+자유 총 금액 입금 내역(자식에게 뜨는)) + (총 송금 내역(부모에게 뜨는))
-
-	// const subAccounts = [
-	//   {sub_account_id: 1, sub_account_usage: "자유", account_id: 1},
-	//   {sub_account_id: 2, sub_account_usage: "잉여", account_id: 1},
-	//   {sub_account_id: 3, sub_account_usage: "고정", account_id: 1}
-	// ];
-
+	// 통합 계좌 내역에  추가된 것 (고정+자유 총 금액 입금 내역(자식에게 뜨는)) + (총 송금 내역(부모에게 뜨는))
 	//특정아이의 세부계좌
 	const subAccounts = await SubAccount.findAll({
 		where: { account_id: childAccount.account_id },
@@ -646,21 +631,9 @@ router.post("/:childId", async (req, res, next) => {
 	const acc = subAccounts.find((e) => e.sub_account_usage === "고정");
 	//자유 세부계좌 id 구함
 	const free = subAccounts.find((e) => e.sub_account_usage === "자유");
-	// const acc = subAccounts.map((e,i) =>{
-	//   if (e.sub_account_usage === "고정")
-	//     return e
-	// })
-	// console.log(acc)
-
-	//subAccounts[0]이게 고정인지 자유인지 어케아냐
-	// 바디값의 reservation객체를
-	// const sub = temp.reservations.map((e) => {
-	// 	return { ...e, sub_account_id: acc.sub_account_id };
-	// });
 
 	// 예약 송금 변수를 미리 정의
 	let sub = [];
-
 	// 예약 송금이 추가된 경우에만 처리
 	if (
 		temp &&
@@ -675,17 +648,12 @@ router.post("/:childId", async (req, res, next) => {
 		// 예약 송금 추가
 		await ScheduledTransfer.bulkCreate([...sub]);
 
-		//고정비용 추가 된 것 + 자유 비용 추가된 것
-
-		// 예약 송금 정보를 바탕으로 고정 지출 입금내역 + 자유 자금 입금내역 구분하여 각각 추가
-		// 고정 비용 총합 / to 의 amount 에서 고정비용 뺸 값
 		const fixAmount = temp.reservations.reduce(
 			(acc, reservation) => acc + reservation.amount,
 			0,
 		);
 
 		const freeAmount = temp.from.amount - fixAmount;
-		// console.log(fixAmount, freeAmount);
 		const fixsubhistory = {
 			sub_account_id: acc.sub_account_id,
 			bank: CHILD_BANK,
@@ -727,14 +695,6 @@ router.post("/:childId", async (req, res, next) => {
 		console.log("생성", sub);
 	}
 	res.json({ code: 200, message: "용돈 송금 완료" });
-
-	// //세부계좌내역
-	// const subAccountHistorys = await SubAccountHistory.findAll({where: {sub_account_id: childAccount.sub_account_id}})
-
-	// //추가되어야할것: sub_history_id, createDate, bank, account_number
-	// const subhis = temp.reservation.map ((e)=>{
-	//   return { ...temp.to, sub_history_id:  }
-	// })
 });
 
 /**
@@ -743,15 +703,15 @@ router.post("/:childId", async (req, res, next) => {
  *   get:
  *     tags:
  *       - Accounts
- *     summary: Get Account Number
- *     description: This endpoint retrieves the account number for a user by their ID.
+ *     summary: 계좌 번호 조회
+ *     description: 계좌 번호(가상 계좌 번호)를 조회하는 api입니다.
  *     parameters:
  *       - in: query
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: The user ID to find the associated account number.
+ *         description: user=user_id(pk)
  *     responses:
  *       200:
  *         description: The account number for the user.
