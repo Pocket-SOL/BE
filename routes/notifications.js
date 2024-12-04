@@ -4,38 +4,15 @@ const { ChildRegNoti, Noti } = require("../models");
 
 /**
  * @swagger
- * /api/notifications/{id}:
+ * /api/notifications:
  *   get:
- *     summary: 특정 사용자의 알림 목록 조회
- *     description: 주어진 `id`에 해당하는 사용자의 알림 목록을 조회합니다.
- *     parameters:
- *       - name: id
- *         in: path
- *         description: 알림을 조회할 사용자의 ID
- *         required: true
- *         schema:
- *           type: string
+ *     summary: 모든 알림 조회
+ *     description: Retrieve all notifications with their details
+ *     tags:
+ *       - Notifications
  *     responses:
  *       200:
- *         description: 알림 목록 조회 성공
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   notification_id:
- *                     type: string
- *                   receiver_id:
- *                     type: string
- *                   message:
- *                     type: string
- *                   createdAt:
- *                     type: string
- *                     format: date-time
- *       404:
- *         description: 알림 목록이 없습니다.
+ *         description: Successfully retrieved notifications
  *         content:
  *           application/json:
  *             schema:
@@ -43,9 +20,42 @@ const { ChildRegNoti, Noti } = require("../models");
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "알림 목록이 없습니다."
+ *                   example: "알림을 성공적으로 불러왔습니다."
+ *                 response:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       notification_id:
+ *                         type: integer
+ *                         example: 1
+ *                       type:
+ *                         type: string
+ *                         example: "message"
+ *                       isread:
+ *                         type: boolean
+ *                         example: false
+ *                       status:
+ *                         type: string
+ *                         example: "pending"
+ *                       amount:
+ *                         type: integer
+ *                         example: 1000
+ *                       content:
+ *                         type: string
+ *                         example: "새로운 알림이 도착했습니다."
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2024-12-04T10:30:00Z"
+ *                       sender_id:
+ *                         type: integer
+ *                         example: 1
+ *                       receiver_id:
+ *                         type: integer
+ *                         example: 2
  *       500:
- *         description: 서버 오류
+ *         description: Server error
  *         content:
  *           application/json:
  *             schema:
@@ -55,7 +65,7 @@ const { ChildRegNoti, Noti } = require("../models");
  *                   type: string
  *                   example: "서버 오류가 발생했습니다."
  */
-router.get("", async (req, res) => {
+router.get("/", async (req, res) => {
 	try {
 		const response = await Noti.findAll({
 			attributes: [
@@ -80,6 +90,96 @@ router.get("", async (req, res) => {
 	}
 });
 
+/**
+ * @swagger
+ * /api/notifications/{id}:
+ *   post:
+ *     summary: 새로운 알림 등록
+ *     description: Create a new notification with parent ID as sender
+ *     tags:
+ *       - Notifications
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: Parent's ID (sender_id)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - type
+ *               - child_id
+ *               - amount
+ *               - content
+ *             properties:
+ *               type:
+ *                 type: string
+ *                 example: "allowance"
+ *                 description: Type of notification
+ *               child_id:
+ *                 type: integer
+ *                 example: 2
+ *                 description: ID of the child (receiver_id)
+ *               amount:
+ *                 type: integer
+ *                 example: 10000
+ *                 description: Amount related to notification
+ *               content:
+ *                 type: string
+ *                 example: "이번 달 용돈이 지급되었습니다."
+ *                 description: Notification content
+ *     responses:
+ *       200:
+ *         description: Notification created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "알림이 성공적으로 등록되었습니다."
+ *                 response:
+ *                   type: object
+ *                   properties:
+ *                     type:
+ *                       type: string
+ *                       example: "allowance"
+ *                     isread:
+ *                       type: boolean
+ *                       example: false
+ *                     status:
+ *                       type: string
+ *                       example: "pending"
+ *                     amount:
+ *                       type: integer
+ *                       example: 10000
+ *                     content:
+ *                       type: string
+ *                       example: "이번 달 용돈이 지급되었습니다."
+ *                     sender_id:
+ *                       type: integer
+ *                       example: 1
+ *                     receiver_id:
+ *                       type: integer
+ *                       example: 2
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "서버 오류가 발생했습니다."
+ */
 // 알람 등록
 router.post("/:id", async (req, res) => {
 	const { id } = req.params; // 부모 id.
@@ -105,6 +205,60 @@ router.post("/:id", async (req, res) => {
 	}
 });
 
+/**
+ * @swagger
+ * /api/notifications/{id}:
+ *   get:
+ *     summary: 특정 사용자의 알림 목록 조회
+ *     description: Retrieve all notifications for a specific user by their ID
+ *     tags:
+ *       - Notifications
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: Receiver's user ID
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved notifications
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   notification_id:
+ *                     type: integer
+ *                     example: 1
+ *                   receiver_id:
+ *                     type: integer
+ *                     example: 1
+ *                   # Add other ChildRegNoti model properties here
+ *       404:
+ *         description: No notifications found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "알림 목록이 없습니다."
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "서버 오류가 발생했습니다."
+ */
 // 알림 가져오기
 router.get("/:id", async (req, res) => {
 	const { id } = req.params; // 요청 파라미터에서 userid 받기
@@ -127,7 +281,50 @@ router.get("/:id", async (req, res) => {
 		return res.status(500).json({ message: "서버 오류가 발생했습니다." });
 	}
 });
-
+/**
+ * @swagger
+ * /api/notifications/{id}:
+ *   put:
+ *     summary: 알림 상태 업데이트
+ *     description: Update notification status to 'done' and mark as read
+ *     tags:
+ *       - Notifications
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: ID of the notification to update
+ *     responses:
+ *       200:
+ *         description: Successfully updated notification
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "알림이 성공적으로 수정되었습니다."
+ *                 response:
+ *                   type: array
+ *                   items:
+ *                     type: integer
+ *                   example: [1]
+ *                   description: Array containing number of affected rows
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "서버 오류가 발생했습니다."
+ */
 router.put("/:id", async (req, res) => {
 	const { id } = req.params;
 

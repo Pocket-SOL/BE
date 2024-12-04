@@ -612,7 +612,78 @@ router.get("/search", async (req, res) => {
 		res.status(500).json({ error: "Intrnal Server Error" });
 	}
 });
-
+/**
+ * @swagger
+ * /api/users/token:
+ *   put:
+ *     summary: 사용자 오픈뱅킹 토큰 업데이트
+ *     description: Update user's open banking token and user sequence number
+ *     tags:
+ *       - Users
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - token
+ *               - user_seq_no
+ *             properties:
+ *               userId:
+ *                 type: integer
+ *                 example: 1
+ *                 description: 사용자 ID
+ *               token:
+ *                 type: string
+ *                 example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                 description: 오픈뱅킹 API 접근 토큰
+ *               user_seq_no:
+ *                 type: string
+ *                 example: "U123456789"
+ *                 description: 오픈뱅킹 사용자 일련번호
+ *     responses:
+ *       200:
+ *         description: Token updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Open API 토큰/유저가 성공적으로 업데이트되었습니다."
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     open_api_token:
+ *                       type: string
+ *                       example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                     user_seq_no:
+ *                       type: string
+ *                       example: "U123456789"
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "사용자를 찾을 수 없습니다."
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "서버 오류, 다시 시도해주세요."
+ */
 router.put("/token", async (req, res) => {
 	console.log("body", req.body);
 	const { userId, token, user_seq_no } = req.body;
@@ -638,7 +709,69 @@ router.put("/token", async (req, res) => {
 		res.status(500).json({ message: "서버 오류, 다시 시도해주세요." });
 	}
 });
-
+/**
+ * @swagger
+ * /api/users/token:
+ *   post:
+ *     summary: 오픈뱅킹 토큰 발급
+ *     description: |
+ *       오픈뱅킹 OAuth 인증 코드를 사용하여 액세스 토큰을 발급받습니다.
+ *
+ *       External API:
+ *       - URL: https://testapi.openbanking.or.kr/oauth/2.0/token
+ *       - Provider: 금융결제원 오픈뱅킹
+ *     tags:
+ *       - Users
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - code
+ *             properties:
+ *               code:
+ *                 type: string
+ *                 description: 오픈뱅킹 인증 후 받은 authorization code
+ *                 example: "authorization_code_example"
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved access token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 access_token:
+ *                   type: string
+ *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                 token_type:
+ *                   type: string
+ *                   example: "Bearer"
+ *                 expires_in:
+ *                   type: integer
+ *                   example: 7776000
+ *                 refresh_token:
+ *                   type: string
+ *                   example: "refresh_token_example"
+ *                 scope:
+ *                   type: string
+ *                   example: "login inquiry transfer"
+ *                 user_seq_no:
+ *                   type: string
+ *                   example: "U123456789"
+ *       500:
+ *         description: API call failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "API 호출 중 오류 발생"
+ */
 router.post("/token", async (req, res) => {
 	const { code } = req.body;
 	const requestData = new URLSearchParams();
@@ -664,7 +797,39 @@ router.post("/token", async (req, res) => {
 		res.status(500).json({ error: "API 호출 중 오류 발생" });
 	}
 });
-
+/**
+ * @swagger
+ * /api/users/oauth:
+ *   post:
+ *     summary: 오픈뱅킹 인증 URL 생성
+ *     description: |
+ *       오픈뱅킹 사용자 인증을 위한 URL을 생성합니다.
+ *
+ *       External API:
+ *       - Base URL: https://testapi.openbanking.or.kr/oauth/2.0/authorize
+ *       - Scope: login, inquiry, transfer
+ *       - Auth Type: 0 (최초인증)
+ *     tags:
+ *       - Users
+ *     responses:
+ *       200:
+ *         description: Generated authorization URL
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: "https://testapi.openbanking.or.kr/oauth/2.0/authorize?response_type=code&client_id=xxxxx&scope=login%20inquiry%20transfer&state=12345678901234567890123456789012&auth_type=0&redirect_uri=http://example.com/callback"
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to generate authorization URL"
+ */
 router.post("/oauth", (req, res) => {
 	const clientId = process.env.OPEN_BANK_ID;
 	const redirectUri = process.env.REDIRECT_URI;
@@ -672,7 +837,71 @@ router.post("/oauth", (req, res) => {
 	res.send(authUrl);
 	// res.json(authUrl);
 });
-
+/**
+ * @swagger
+ * /api/users/me:
+ *   get:
+ *     summary: 오픈뱅킹 사용자 정보 조회
+ *     description: |
+ *       오픈뱅킹 API를 통해 사용자의 정보를 조회합니다.
+ *
+ *       External API:
+ *       - URL: https://testapi.openbanking.or.kr/v2.0/user/me
+ *       - Provider: 금융결제원 오픈뱅킹
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: query
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 오픈뱅킹 액세스 토큰
+ *         example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *       - in: query
+ *         name: user_seq_no
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 오픈뱅킹 사용자 일련번호
+ *         example: "U123456789"
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved user information
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 api_tran_id:
+ *                   type: string
+ *                   example: "1234567890abcdef"
+ *                 api_tran_dtm:
+ *                   type: string
+ *                   example: "20231205103515"
+ *                 user_seq_no:
+ *                   type: string
+ *                   example: "U123456789"
+ *                 user_ci:
+ *                   type: string
+ *                   example: "abcdef1234567890..."
+ *                 user_name:
+ *                   type: string
+ *                   example: "홍길동"
+ *                 res_code:
+ *                   type: string
+ *                   example: "00000"
+ *       500:
+ *         description: Failed to fetch user data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to fetch open user data"
+ */
 router.get("/me", async (req, res) => {
 	const { token, user_seq_no } = req.query;
 	try {
@@ -691,6 +920,64 @@ router.get("/me", async (req, res) => {
 		res.status(500).json({ error: "Failed to fetch open user data" });
 	}
 });
+
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   put:
+ *     summary: 사용자 학교 정보 업데이트
+ *     description: Update user's school information
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: ID of the user to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - schoolName
+ *             properties:
+ *               schoolName:
+ *                 type: string
+ *                 example: "서울중학교"
+ *                 description: Name of the school
+ *     responses:
+ *       200:
+ *         description: School information updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                   example: true
+ *                 response:
+ *                   type: array
+ *                   items:
+ *                     type: integer
+ *                   example: [1]
+ *                   description: Array containing number of affected rows
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to update school information"
+ */
 router.put("/:id", async (req, res) => {
 	const user_id = req.params.id;
 	const { schoolName } = req.body;
@@ -706,7 +993,55 @@ router.put("/:id", async (req, res) => {
 		console.error(error);
 	}
 });
-
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   get:
+ *     summary: 특정 사용자 정보 조회
+ *     description: Retrieve user information by user ID
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: ID of the user to retrieve
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved user information
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user_id:
+ *                   type: integer
+ *                   example: 1
+ *                 # Add other user properties here based on your User model
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "User not found"
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Error fetching user data"
+ */
 router.get("/:id", async (req, res) => {
 	try {
 		const user = await User.findOne({
