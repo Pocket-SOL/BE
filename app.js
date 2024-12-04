@@ -30,7 +30,8 @@ const swaggerSpecs = require("./config/swagger");
 // sequelize 라이브러리로 ORM 사용
 const sequelize = require("./models/index.js").sequelize;
 const app = express();
-
+//cron
+const scheduleCronJob = require("./cron/transferSurplus");
 // cors 미들웨어 설정 - 다른 미들웨어보다 앞에 위치해야 함
 app.use(
 	cors({
@@ -86,5 +87,8 @@ app.use(function (err, req, res, next) {
 	res.status(err.status || 500);
 	res.render("error");
 });
-
+//매월 1일
+scheduleCronJob();
+//1분 테스트
+// scheduleCronJob("*/1 * * * *");
 module.exports = app;
