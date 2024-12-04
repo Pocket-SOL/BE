@@ -1,32 +1,36 @@
-const { SubAccount, SubAccountHistory, Account } = require("../models");
-const { where } = require("sequelize");
-const { sequelize, Sequelize } = require("sequelize");
+const {
+	SubAccount,
+	SubAccountHistory,
+	Account,
+	sequelize,
+	Sequelize,
+} = require("../models");
 
 const transferToFreeAmount = async (id) => {
 	const now = new Date();
 
 	const currentDate = now.toISOString().split("T")[0]; // '2024-12-04'
 	const currentTime = now.toISOString().split("T")[1].split(".")[0];
-	// const t = await sequelize.transaction();
-	// console.log(t);
-	// await sequelize.transaction(async (t) => {
-	// 1. 사용자 조회
-	try {
-		const acc = await Account.findOne({ where: { user_id: id } });
+	await sequelize.transaction(async (t) => {
+		// 1. 사용자 조회
+		const acc = await Account.findOne({
+			where: { user_id: id },
+			transaction: t,
+		});
 		if (!acc) {
 			throw new Error("account not found");
 		}
 		// 2. 자유 세부계좌와 잉여 세부계좌 조회
 		const freeAccount = await SubAccount.findOne({
 			where: { account_id: acc.account_id, sub_account_usage: "자유" },
-			// transaction: t,
+			transaction: t,
 		});
 		if (!freeAccount) {
 			throw new Error("Fixed subaccount not found");
 		}
 		const wishAccount = await SubAccount.findOne({
 			where: { account_id: acc.account_id, sub_account_usage: "잉여" },
-			// transaction: t,
+			transaction: t,
 		});
 		if (!wishAccount) {
 			throw new Error("Free subaccount not found");
@@ -43,7 +47,7 @@ const transferToFreeAmount = async (id) => {
 					"balance",
 				],
 			],
-			// transaction: t,
+			transaction: t,
 		});
 
 		const freeBalance = freeBalanceResult?.dataValues?.balance || 0;
@@ -61,7 +65,7 @@ const transferToFreeAmount = async (id) => {
 				date: currentDate,
 				account_number: "내계좌",
 			},
-			// { transaction: t },
+			{ transaction: t },
 		);
 
 		// 5. 잉여 계좌에 금액 추가
@@ -75,13 +79,9 @@ const transferToFreeAmount = async (id) => {
 				date: currentDate,
 				account_number: "내계좌",
 			},
-			// { transaction: t },
+			{ transaction: t },
 		);
-		// });
-
-		return { message: "Transfer successful" };
-	} catch (error) {
-		console.error(error);
-	}
+	});
+	return { message: "Transfer successful" };
 };
 module.exports = { transferToFreeAmount };
