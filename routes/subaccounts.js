@@ -164,6 +164,7 @@ router.get("/histories", async (req, res, next) => {
 					required: true, // SubAccount와 연결된 SubAccountHistory만 포함
 				},
 			],
+			order: [["sub_history_id", "DESC"]],
 		});
 		return res.status(200).json(histories);
 	} catch (error) {
