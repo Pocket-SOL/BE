@@ -88,10 +88,10 @@ router.post("/:id", async (req, res) => {
 				type: "PleaAllowance",
 				content: `자녀 ${userName}님이 용돈을 ${amount}원 요청했어요 !`,
 				amount: amount,
-				status: "done",
+				status: "pending",
 				sender_id: user_id,
 				receiver_id: ParentId,
-				isread: true,
+				isread: false,
 			};
 			const response = await Noti.create(pleaNoti, { raw: true });
 			res.json({ ok: true, response: response });
