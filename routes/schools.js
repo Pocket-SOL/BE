@@ -3,7 +3,42 @@ const { User } = require("../models");
 const router = express.Router();
 const upload = require("../config/multer");
 const axios = require("axios");
-
+/**
+ * @swagger
+ * /api/schools:
+ *   get:
+ *     summary: 서울시 중학교 목록 조회
+ *     description: |
+ *       서울시 교육청 Open API를 사용하여 중학교 목록을 조회합니다.
+ *
+ *       External API:
+ *       - URL: http://openapi.seoul.go.kr:8088/{apiKey}/json/neisSchoolInfoMS/1/1000/
+ *       - Provider: 서울특별시 교육청
+ *       - 한 번에 최대 1000개의 학교 정보를 조회합니다.
+ *       - API 키는 환경 변수로 관리됩니다.
+ *     tags:
+ *       - Schools
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved school list
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ *               example: ["서울중학교", "한강중학교", "강남중학교"]
+ *       500:
+ *         description: Failed to fetch data from external API
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to fetch school data"
+ */
 router.get("/", async (req, res) => {
 	const apiKey = process.env.SCHOOL_KEY;
 	const url = `http://openapi.seoul.go.kr:8088/${apiKey}/json/neisSchoolInfoMS/1/1000/`;
@@ -19,7 +54,83 @@ router.get("/", async (req, res) => {
 		res.status(500).json({ error: "Failed to fetch school data" });
 	}
 });
-
+/**
+ * @swagger
+ * /api/schools/img:
+ *   post:
+ *     summary: S3 이미지 업로드
+ *     description: |
+ *       이미지 파일을 AWS S3에 업로드합니다.
+ *       - 지원 형식: jpg, jpeg, png
+ *       - 최대 파일 크기: 5MB
+ *     tags:
+ *       - Schools
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *                 description: The image file to upload
+ *     responses:
+ *       200:
+ *         description: Successfully uploaded file to S3
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "File upload successfully"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     imageUrl:
+ *                       type: string
+ *                       example: "https://your-bucket.s3.region.amazonaws.com/path/to/image.jpg"
+ *                       description: S3 URL of the uploaded image
+ *                     imageKey:
+ *                       type: string
+ *                       example: "path/to/image.jpg"
+ *                       description: S3 key of the uploaded image
+ *       400:
+ *         description: Invalid file format or size
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Invalid file format. Only jpg, jpeg, png allowed"
+ *       500:
+ *         description: Upload failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Failed to upload file"
+ *                 error:
+ *                   type: string
+ *                   example: "S3 upload error message"
+ */
 router.post("/img/", upload.single("image"), (req, res, next) => {
 	try {
 		const images = req.file;
@@ -45,7 +156,67 @@ router.post("/img/", upload.single("image"), (req, res, next) => {
 		});
 	}
 });
-
+/**
+ * @swagger
+ * /api/schools/{id}:
+ *   put:
+ *     summary: 사용자 학교 인증 사진 업데이트
+ *     description: Update user's school authentication photo URL
+ *     tags:
+ *       - Schools
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: ID of the user to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - imgUrl
+ *             properties:
+ *               imgUrl:
+ *                 type: string
+ *                 example: "https://example.com/school-auth.jpg"
+ *                 description: New school authentication photo URL
+ *     responses:
+ *       200:
+ *         description: Photo URL updated or already up to date
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Photo URL updated successfully"
+ *       404:
+ *         description: User not found or update failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Record not found"
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error updating photo URL"
+ */
 //사진 업데이트
 router.put("/:id", async (req, res) => {
 	console.log(req.params);

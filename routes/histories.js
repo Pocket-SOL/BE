@@ -5,50 +5,58 @@ const { where } = require("sequelize");
 const upload = require("../config/multer");
 /**
  * @swagger
- * /:
+ * /api/histories:
  *   get:
+ *     summary: 히스토리 조회
+ *     description: Retrieve history information by ID
  *     tags:
- *       - History
- *     summary: Retrieve a specific history by ID
- *     description: Fetches the details of a transaction history using its ID.
+ *       - Histories
  *     parameters:
  *       - in: query
  *         name: id
  *         required: true
- *         description: The ID of the transaction history to retrieve.
  *         schema:
  *           type: integer
+ *           example: 60
+ *         description: ID of the history to retrieve
  *     responses:
  *       200:
- *         description: Successfully retrieved the history.
+ *         description: The history information
  *         content:
  *           application/json:
- *             example:
- *               history_id: 2
- *               date: "2024-11-20"
- *               time: "10:01:00"
- *               transaction_type: "출금"
- *               account_holder: "붕어빵"
- *               account_number: "계좌번호"
- *               amount: "200.00"
- *               photo: null
- *               account_id: 2
- *               bank: null
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 history_id:
+ *                   type: integer
+ *                   example: 60
  *       400:
- *         description: Missing or invalid History ID.
+ *         description: Invalid request - Missing history ID
  *         content:
  *           application/json:
- *             example:
- *               message: "History ID is required"
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "History ID is required"
  *       500:
- *         description: Internal server error.
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal server error"
  */
 router.get("/", (req, res, next) => {
 	const historyId = req.query.id;
 	if (!historyId) {
 		return res.status(400).json({ message: "History ID is required" });
 	}
-
+	console.log(historyId);
 	History.findOne({ where: { history_id: historyId } })
 		.then((history) => {
 			return res.json(history);
@@ -57,7 +65,65 @@ router.get("/", (req, res, next) => {
 			next(err);
 		});
 });
-
+/**
+ * @swagger
+ * /api/histories/img:
+ *   post:
+ *     summary: 이미지 업로드
+ *     description: Upload a single image file to S3
+ *     tags:
+ *       - Histories
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *                 description: The image file to upload
+ *     responses:
+ *       200:
+ *         description: File uploaded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "File upload successfully"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     imageUrl:
+ *                       type: string
+ *                       example: "https://s3-bucket-name.s3.region.amazonaws.com/path/to/image.jpg"
+ *                     imageKey:
+ *                       type: string
+ *                       example: "path/to/image.jpg"
+ *       500:
+ *         description: Failed to upload file
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Failed to upload file"
+ *                 error:
+ *                   type: string
+ *                   example: "Error message details"
+ */
 router.post("/img/", upload.single("image"), (req, res, next) => {
 	try {
 		const images = req.file;
@@ -83,7 +149,67 @@ router.post("/img/", upload.single("image"), (req, res, next) => {
 		});
 	}
 });
-
+/**
+ * @swagger
+ * /api/histories/{id}:
+ *   put:
+ *     summary: 히스토리 사진 URL 업데이트
+ *     description: Update the photo URL for a specific history record
+ *     tags:
+ *       - Histories
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: ID of the history record to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - imgUrl
+ *             properties:
+ *               imgUrl:
+ *                 type: string
+ *                 example: "https://example.com/photo.jpg"
+ *                 description: New photo URL to update
+ *     responses:
+ *       200:
+ *         description: Photo URL updated or already up to date
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Photo URL updated successfully"
+ *       404:
+ *         description: History record not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Record not found"
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error updating photo URL"
+ */
 //사진 업데이트
 router.put("/:id", async (req, res) => {
 	try {

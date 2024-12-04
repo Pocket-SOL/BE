@@ -574,6 +574,9 @@ router.post("/:childId", async (req, res, next) => {
 	const temp = req.body;
 	const parentId = temp.from.parent_id;
 
+	if (!parentId) {
+		res.status(404).json({ message: "user Id 없" });
+	}
 	const parentAccount = await Account.findOne({
 		where: { user_id: parentId },
 	});

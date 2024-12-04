@@ -7,10 +7,9 @@ const {
 	Account,
 } = require("../models");
 const { where } = require("sequelize");
-
 /**
  * @swagger
- * api/subaccounts:
+ * /api/subaccounts:
  *   get:
  *     tags:
  *       - SubAccounts
@@ -18,11 +17,11 @@ const { where } = require("sequelize");
  *     description: Retrieve subaccount information, including total deposit and withdrawal, along with sub_account_usage.
  *     parameters:
  *       - in: query
- *         name: userId(유저아이디(pk))
+ *         name: userId
  *         required: true
  *         schema:
  *           type: integer
- *           description: The ID of the user to retrieve subaccounts for.
+ *         description: 조회할 유저의 ID(PK)
  *     responses:
  *       200:
  *         description: A list of subaccounts with their transaction sums and usage.
@@ -48,8 +47,28 @@ const { where } = require("sequelize");
  *                       sub_account_usage:
  *                         type: string
  *                         description: The type of usage for the subaccount (e.g., "고정" or "자유").
+ *       400:
+ *         description: Bad Request - Missing required parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "User ID is required"
+ *       404:
+ *         description: Not Found - Account not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "계좌를 찾을 수 없습니다."
  *       500:
- *         description: Internal server error.
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -58,8 +77,10 @@ const { where } = require("sequelize");
  *                 message:
  *                   type: string
  *                   example: "Error occurred"
+ *                 error:
+ *                   type: object
+ *                   description: Detailed error information
  */
-
 //user의 각 subaccount의 잔액 불러오기
 router.get("/", async (req, res, next) => {
 	const userId = req.query.userId;
