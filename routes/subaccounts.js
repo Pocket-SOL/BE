@@ -140,4 +140,34 @@ router.get("/", async (req, res, next) => {
 			res.status(500).json({ message: "Error occurred", error });
 		});
 });
+
+router.get("/histories", async (req, res, next) => {
+	const { type, userId } = req.query;
+	if (!type || !userId) {
+		return res.status(400).json({ message: "User Id and Type required" });
+	}
+
+	try {
+		const account = await Account.findOne({ where: { user_id: userId } });
+		if (!account) {
+			return res.status(404).json({ message: "계좌를 찾을 수 없습니다." });
+		}
+
+		const histories = await SubAccountHistory.findAll({
+			include: [
+				{
+					model: SubAccount, // SubAccount 모델을 포함시켜 account_id로 필터링
+					where: {
+						account_id: account.account_id, // Account ID가 일치하는 SubAccount만 가져오기
+						sub_account_usage: type,
+					},
+					required: true, // SubAccount와 연결된 SubAccountHistory만 포함
+				},
+			],
+		});
+		return res.status(200).json(histories);
+	} catch (error) {
+		next(error);
+	}
+});
 module.exports = router;
