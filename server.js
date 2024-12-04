@@ -38,11 +38,13 @@ io.on("connection", (socket) => {
 	});
 
 	socket.on("askAllowance", (data) => {
-		console.log("용돈요청");
+		console.log(data);
 		io.to(data.parent_id).emit("ask-Accept-Allowance", {
 			child_id: data.child_id,
 			AllowanceMessage: data.message,
-			type: "ask-allowance",
+			amount: data.amount,
+			notification_id: data.notification_id,
+			type: "PleaAllowance",
 		});
 	});
 
@@ -52,6 +54,37 @@ io.on("connection", (socket) => {
 		// 모든 클라이언트에 브로드캐스트
 		io.to(data.writer).emit("newCommentNodification", {
 			content: data.content,
+		});
+	});
+
+	socket.on("acceptAllowance", (data) => {
+		console.log("22");
+		console.log("data", data);
+		io.to(data.child_id).emit("acceptAllowance_Noti", {
+			parent_id: data.parent_id,
+			parent: data.parent,
+			message: data.message,
+			type: data.type,
+		});
+	});
+
+	socket.on("sendAllowance", (data) => {
+		io.to(data.child_id).emit("send_notification", {
+			parent_id: data.parent_id,
+			message: data.message,
+			noti_id: data.noti_id,
+			type: data.type,
+		});
+	});
+
+	socket.on("rejectAllowance", (data) => {
+		console.log(data);
+		io.to(data.child_id).emit("send_RejectNotification", {
+			parent_id: data.parent_id,
+			parent: data.parent,
+			parentMessage: data.parentMessage,
+			message: data.message,
+			type: data.type,
 		});
 	});
 
