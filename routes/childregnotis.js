@@ -144,6 +144,77 @@ router.post("/registration", async (req, res) => {
 	}
 });
 
+/**
+ * @swagger
+ * /registration:
+ *   put:
+ *     summary: 부모와 자녀 등록 알림 업데이트
+ *     description: 부모와 자녀 간의 관계를 등록하고 알림 상태를 업데이트합니다.
+ *     tags:
+ *       - Registration
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               sender_id:
+ *                 type: integer
+ *                 description: 부모의 user_id
+ *                 example: 1
+ *               receiver_id:
+ *                 type: integer
+ *                 description: 자녀의 user_id
+ *                 example: 2
+ *     responses:
+ *       201:
+ *         description: 자녀 등록 알림이 성공적으로 업데이트되었습니다.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 자녀 등록 알림이 성공적으로 생성되었습니다.
+ *                 notification:
+ *                   type: object
+ *                   description: 업데이트된 알림 정보
+ *       400:
+ *         description: 요청 데이터가 올바르지 않습니다.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: sender_id와 receiver_id는 필수입니다.
+ *       404:
+ *         description: 부모 또는 자녀 정보가 존재하지 않습니다.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 부모 정보가 존재하지 않습니다.
+ *       500:
+ *         description: 서버 오류가 발생했습니다.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 알림 생성 중 오류가 발생했습니다.
+ *                 error:
+ *                   type: string
+ *                   description: 오류 상세 정보
+ */
 router.put("/registration", async (req, res) => {
 	try {
 		const { sender_id, receiver_id } = req.body;
