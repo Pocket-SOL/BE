@@ -76,27 +76,28 @@ const { Plea, Noti } = require("../models");
 router.post("/:id", async (req, res) => {
 	try {
 		const ParentId = req.params.id;
-		const { amount, user_id } = req.body;
+		const { amount, user_id, userName } = req.body;
 		const plea = await Plea.create({
 			parent_id: ParentId,
 			amount,
 			user_id,
 		});
 
-		// if (plea) {
-		// 	const pleaNoti = {
-		// 		type: "PleaAllowance",
-		// 		content: "용돈 요청이 도착했어요",
-		// 		amount: amount,
-		// 		status: "pending",
-		// 		sender_id: ParentId,
-		// 		receiver_id: user_id,
-		// 		isread: false,
-		// 	};
-		// 	await Noti.create(pleaNoti);
-		// }
+		if (plea) {
+			const pleaNoti = {
+				type: "PleaAllowance",
+				content: `자녀 ${userName}님이 용돈을 ${amount}원 요청했어요 !`,
+				amount: amount,
+				status: "done",
+				sender_id: user_id,
+				receiver_id: ParentId,
+				isread: true,
+			};
+			const response = await Noti.create(pleaNoti, { raw: true });
+			res.json({ ok: true, response: response });
+		}
 
-		res.json({ ok: true, response: plea });
+		// res.json({ ok: true, response: response2 });
 	} catch (error) {
 		res.status(500).json({ error: error.message });
 	}

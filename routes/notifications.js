@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { ChildRegNoti } = require("../models");
+const { ChildRegNoti, Noti } = require("../models");
 
 /**
  * @swagger
@@ -55,6 +55,56 @@ const { ChildRegNoti } = require("../models");
  *                   type: string
  *                   example: "서버 오류가 발생했습니다."
  */
+router.get("", async (req, res) => {
+	try {
+		const response = await Noti.findAll({
+			attributes: [
+				"notification_id",
+				"type",
+				"isread",
+				"status",
+				"amount",
+				"content",
+				"created_at",
+				"sender_id",
+				"receiver_id",
+			],
+		});
+		res.status(200).json({
+			message: "알림을 성공적으로 불러왔습니다.",
+			response: response,
+		});
+	} catch (error) {
+		console.error("알림을 가져오는 중 오류 발생:", error);
+		return res.status(500).json({ message: "서버 오류가 발생했습니다." });
+	}
+});
+
+// 알람 등록
+router.post("/:id", async (req, res) => {
+	const { id } = req.params; // 부모 id.
+	const { type, child_id, amount, content } = req.body;
+
+	try {
+		const response = await Noti.create({
+			type: type,
+			isread: false,
+			status: "pending",
+			amount: amount,
+			content: content,
+			sender_id: id,
+			receiver_id: child_id,
+		});
+		res.status(200).json({
+			message: "알림이 성공적으로 등록되었습니다.",
+			response: response,
+		});
+	} catch (error) {
+		console.error("알림을 등록하는 중 오류 발생:", error);
+		return res.status(500).json({ message: "서버 오류가 발생했습니다." });
+	}
+});
+
 // 알림 가져오기
 router.get("/:id", async (req, res) => {
 	const { id } = req.params; // 요청 파라미터에서 userid 받기
@@ -78,4 +128,27 @@ router.get("/:id", async (req, res) => {
 	}
 });
 
+router.put("/:id", async (req, res) => {
+	const { id } = req.params;
+
+	try {
+		const response = await Noti.update(
+			{
+				status: "done",
+				isread: true,
+			},
+			{
+				where: { notification_id: id }, // 조건 객체로 감싸기
+			},
+		);
+
+		return res.status(200).json({
+			message: "알림이 성공적으로 수정되었습니다.",
+			response: response,
+		});
+	} catch (error) {
+		console.error("알림을 수정하는 중 오류 발생:", error);
+		return res.status(500).json({ message: "서버 오류가 발생했습니다." });
+	}
+});
 module.exports = router;
