@@ -23,6 +23,7 @@
     "multer-s3": "^3.0.1",
     "mysql": "^2.18.1",
     "mysql2": "^3.11.4",
+    "node-cron": "^3.0.3",
     "prettier": "^3.3.3",
     "query-string": "^9.1.1",
     "sequelize": "^6.37.5",
