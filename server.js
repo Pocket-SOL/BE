@@ -6,7 +6,10 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
 	cors: {
-		origin: "http://localhost:5173", // React 클라이언트 URL
+		origin:
+			process.env.NODE_ENV === "production"
+				? "http://pocketsol.shop"
+				: "http://localhost:5173", // React 클라이언트 URL
 		methods: ["GET", "POST"],
 	},
 });
@@ -52,7 +55,7 @@ io.on("connection", (socket) => {
 	socket.on("newComment", (data) => {
 		console.log("Notification to WriterId:", data.writer);
 		// 모든 클라이언트에 브로드캐스트
-		io.to(data.writer).emit("newCommentNodification", {
+		io.to(data.writer).emit("newCommentNotification", {
 			content: data.content,
 		});
 	});
@@ -104,5 +107,12 @@ io.on("connection", (socket) => {
 const PORT = 5000;
 server.listen(PORT, () => {
 	console.log(`Server is running on http://localhost:${PORT}`);
+});
+
+process.on("SIGINT", () => {
+	console.log("Shutting down server...");
+	io.close(); // 소켓 서버 종료
+	server.close(); // HTTP 서버 종료
+	process.exit();
 });
 module.exports = { io, userSocketMap }; // userSocketMap을 내보냄
